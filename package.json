@@ -1,5 +1,5 @@
 {
-  "name": "vorlage",
+  "name": "tutor-math-site",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -47,7 +47,7 @@
     "test:infra-status": "node scripts/test-infra-status.mjs",
     "typecheck": "vue-tsc --noEmit",
     "infra:status:sync": "node scripts/generate-infra-status.mjs",
-    "build": "pnpm run content:sync && pnpm run infra:status:sync && node --max-old-space-size=4096 ./node_modules/vite/bin/vite.js build",
+    "build": "pnpm run content:sync && node --max-old-space-size=4096 ./node_modules/vite/bin/vite.js build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -75,5 +75,6 @@
     "typescript": "^5.9.3",
     "vite": "^7.1.2",
     "vue-tsc": "^3.2.5"
-  }
+  },
+  "packageManager": "pnpm@10.32.1"
 }
