@@ -47,7 +47,7 @@
     "test:infra-status": "node scripts/test-infra-status.mjs",
     "typecheck": "vue-tsc --noEmit",
     "infra:status:sync": "node scripts/generate-infra-status.mjs",
-    "build": "pnpm run content:sync && node --max-old-space-size=4096 ./node_modules/vite/bin/vite.js build",
+    "build": "pnpm run content:sync && node --max-old-space-size=3072 ./node_modules/vite/bin/vite.js build",
     "preview": "vite preview",
     "test:learning-catalog": "node scripts/test-learning-catalog.mjs",
     "verify:build": "node scripts/verify-static-build.mjs",
