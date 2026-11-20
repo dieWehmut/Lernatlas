@@ -42,7 +42,7 @@ h1 {
   min-width: 0;
   margin: 0;
   color: var(--site-text);
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: Georgia, 'Times New Roman', var(--font-family-base), serif;
   font-size: clamp(24px, 3.5vw, 36px);
   font-weight: 800;
   line-height: 1;

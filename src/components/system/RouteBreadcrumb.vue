@@ -88,7 +88,7 @@ const staticPages: Record<string, Crumb> = {
   'math-home': { label: '数学资料', to: '/math' },
   'math-catalog': { label: '数学资料', to: '/math' },
   archive: { label: 'Archive', to: '/archive' },
-  notes: { label: 'Notes', to: '/notes' },
+  notes: { label: '学习路线', to: '/notes' },
   capture: { label: 'Capture', to: '/capture' },
   infra: { label: 'Infra', to: '/infra' },
   project: { label: 'Project', to: '/project' },
@@ -161,7 +161,7 @@ const crumbs = computed<Crumb[]>(() => {
     return crumbs
   }
   if (name === 'note-detail') {
-    const crumbs: Crumb[] = [{ label: 'Notes', to: '/notes' }, { label: detailTitle() }]
+    const crumbs: Crumb[] = [{ label: '学习路线', to: '/notes' }, { label: detailTitle() }]
     if (sectionCrumb) crumbs.push(sectionCrumb)
     return crumbs
   }

@@ -9,7 +9,7 @@
       />
       <div class="about-content">
         <div class="about-contact">
-          <h2 id="contact-me">Contact Me</h2>
+          <h2 id="contact-me">联系与反馈</h2>
           <div class="about-contact__list">
             <div class="about-contact__item">
               <div class="about-contact__label">
@@ -22,8 +22,8 @@
                 https://github.com/{{ siteConfig.githubUser }}
               </a>
             </div>
-            <div class="about-contact__divider"></div>
-            <div class="about-contact__item">
+            <div v-if="siteConfig.email" class="about-contact__divider"></div>
+            <div v-if="siteConfig.email" class="about-contact__item">
               <div class="about-contact__label">
                 <el-icon class="about-contact__icon about-contact__icon--email"><Message /></el-icon>
                 <span>Email</span>

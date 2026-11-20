@@ -22,15 +22,11 @@
 import { onMounted } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import {
-  Camera,
   Collection,
-  Connection,
-  Cpu,
   FolderOpened,
   House,
   Notebook,
   PriceTag,
-  Search,
   User,
 } from '@element-plus/icons-vue'
 import { preloadPrimaryRoutes, preloadRouteByPath } from '../../router'
@@ -46,12 +42,14 @@ const navItems = [
   { name: 'junior', label: '初中数学', to: '/math?collection=junior', icon: Notebook, collection: 'junior' },
   { name: 'senior', label: '高中专题', to: '/math?collection=senior', icon: FolderOpened, collection: 'senior' },
   { name: 'competition', label: '高中竞赛', to: '/math?collection=competition', icon: PriceTag, collection: 'competition' },
+  { name: 'notes', label: '学习路线', to: '/notes', icon: Notebook },
   { name: 'about', label: '关于本站', to: '/about', icon: User },
 ]
 
 function isActive(item) {
   if (item.name === 'home') return route.path === '/' || route.path === '/home'
   if (item.name === 'about') return route.path === '/about'
+  if (item.name === 'notes') return route.path === '/notes' || route.path.startsWith('/note/')
   if (!route.path.startsWith('/math')) return false
   const collection = String(route.query.collection || getTopic(String(route.params.id || ''))?.collectionId || '')
   return item.collection ? item.collection === collection : !collection

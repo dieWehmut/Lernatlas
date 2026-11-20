@@ -14,8 +14,8 @@ export type { DisplayMode } from '../console/displayMode'
  * The two site shells. `console` is the desktop-first shell, while `standard`
  * is the existing sidebar/drawer experience.
  */
-export const DISPLAY_MODE_STORAGE_KEY = 'displayMode'
-export const LEGACY_DISPLAY_MODE_STORAGE_KEY = 'viewMode'
+export const DISPLAY_MODE_STORAGE_KEY = 'tutor-displayMode'
+export const LEGACY_DISPLAY_MODE_STORAGE_KEY = 'tutor-viewMode'
 export const DESKTOP_MEDIA_QUERY = '(min-width: 901px)'
 
 const displayMode = ref<DisplayMode>(DEFAULT_DISPLAY_MODE)

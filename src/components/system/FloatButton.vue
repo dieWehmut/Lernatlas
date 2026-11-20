@@ -243,7 +243,7 @@ function toggleColorSchemePanel() {
 function selectLanguage(code) {
   locale.value = code
   try {
-    localStorage.setItem('locale', code)
+    localStorage.setItem('tutor-locale', code)
   } catch {}
 }
 

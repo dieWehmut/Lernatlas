@@ -21,6 +21,7 @@ public/infra-status.json
 *.gif
 *.webp
 *.svg
+!public/favicon.svg
 *.avif
 src/data/docs/**/*.png
 src/data/docs/**/*.jpg

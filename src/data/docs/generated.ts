@@ -14,48 +14,20 @@ export type GeneratedDocMeta = {
 
 export const generatedDocMeta: GeneratedDocMeta[] = [
   {
-    "id": "development-log",
-    "type": "post",
-    "title": "Development Log",
-    "date": "2026/10/30 16:15",
-    "tags": [
-      "devlog",
-      "commit"
-    ],
-    "summary": "Development Log\nGenerated from source commit 89531e0ab8695e6d75c0596a658e3c1ead77093e.\n89531e0 2026-10-30T16:15:18+08...",
-    "wordCount": 23,
-    "readingMinutes": 1,
-    "updated": "2026/10/30 16:15",
-    "path": "./posts/development-log.md"
-  },
-  {
-    "id": "hello-world",
-    "type": "post",
-    "title": "Hello World",
-    "date": "2026-05-01",
-    "tags": [
-      "intro",
-      "welcome"
-    ],
-    "summary": "Hello World\nWelcome to your new Vorlage site. Edit or replace this post to get started.\nThis template supports GitHub...",
-    "wordCount": 38,
-    "readingMinutes": 1,
-    "updated": "2026/10/30 16:15",
-    "path": "./posts/hello-world.md"
-  },
-  {
-    "id": "sample-note",
+    "id": "math-learning-guide",
     "type": "note",
-    "title": "Sample Note",
-    "date": "2026-05-01",
+    "title": "数学资料的学习路线",
+    "date": "2026-11-20",
     "tags": [
-      "note"
+      "数学",
+      "学习路线",
+      "阅读方法"
     ],
-    "summary": "This is a sample note. Replace it with your own content.",
-    "wordCount": 11,
-    "readingMinutes": 1,
+    "summary": "按前置知识安排初中数学、高中专题与竞赛拓展的练习顺序，并区分原始讲义和校正提示。",
+    "wordCount": 808,
+    "readingMinutes": 3,
     "updated": "2026/10/30 16:15",
-    "path": "./notes/sample-note.md"
+    "path": "./notes/math-learning-guide.md"
   }
 ] as GeneratedDocMeta[]
 

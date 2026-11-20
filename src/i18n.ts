@@ -15,8 +15,8 @@ const messages = {
   la,
 };
 
-const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('locale') : null;
-const defaultLocale = saved || 'en';
+const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('tutor-locale') : null;
+const defaultLocale = saved || 'zh';
 
 const i18n = createI18n({
   legacy: false,
