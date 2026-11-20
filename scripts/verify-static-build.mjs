@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { readLearningData, verifyMaterialFiles } from './test-learning-catalog.mjs'
+import { verifyLearningMaterialAssets } from './test-learning-material-assets.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -31,7 +32,8 @@ export function verifyStaticBuild({ directory = path.join(root, 'dist'), base = 
   }
   const { catalog } = readLearningData()
   const materials = verifyMaterialFiles(catalog, directory)
-  return { base, entryAssets: localAssets.length, ...materials }
+  const courseMaterials = verifyLearningMaterialAssets({ materialRoot: directory })
+  return { base, entryAssets: localAssets.length, ...materials, courseMaterials }
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -39,6 +41,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const result = verifyStaticBuild()
     console.log(`PASS static entry: ${result.entryAssets} assets and the 404 fallback at ${result.base}`)
     console.log(`PASS deployed PDF integrity: ${result.files} PDFs, ${result.bytes} bytes, all SHA-256 hashes match the catalog`)
+    console.log(`PASS course materials: ${result.courseMaterials.topics} topics and ${result.courseMaterials.assets} PDF/DOCX assets in the build`)
   } catch (error) {
     console.error(`FAIL static build: ${error.message}`)
     process.exitCode = 1
