@@ -16,8 +16,8 @@
 ```sh
 pnpm install --frozen-lockfile
 pnpm check
-BASE_PATH=/tutor/ pnpm build
-BASE_PATH=/tutor/ pnpm verify:build
+BASE_PATH=/Lernatlas/ pnpm build
+BASE_PATH=/Lernatlas/ pnpm verify:build
 git diff --check
 ```
 
@@ -33,6 +33,12 @@ WSL 环境内存约 8GB；旧脚本的 4GB JavaScript 堆上限曾导致系统 O
 
 ## 浏览器检查
 
-测试核心路径为：首页 → 合集/专题筛选 → 关键词搜索 → 专题详情 → 在线 PDF → 下载。检查了集合结果数量、无结果提示、无效专题、缺解析提示、勘误、中文文件名和 `/tutor/` 子路径。PDF 响应为 HTTP 200、`application/pdf`，文件头为 `%PDF-`。
+测试核心路径为：首页 → 合集/专题筛选 → 关键词搜索 → 专题详情 → 在线 PDF → 下载。检查了集合结果数量、无结果提示、无效专题、缺解析提示、勘误、中文文件名和项目子路径。仓库更名后使用 `/Lernatlas/` 重新验证构建与资源。PDF 响应为 HTTP 200、`application/pdf`，文件头为 `%PDF-`。
 
 视觉检查覆盖桌面和 390px 手机；修复了中文标题的字体回退和 favicon 请求。最终截图复核与线上部署状态见此次交付记录及 GitHub Actions。
+
+## 仓库更名验证
+
+仓库已更名为 `dieWehmut/Lernatlas`，Pages 项目路径为 `/Lernatlas/`。站内反馈链接、网站列表、包名与本地 Git 远程地址同步更新；本地资料源目录和已有阅读偏好键保留。
+
+更名后重新运行了 `pnpm check`、新路径的完整生产构建及静态产物校验，全部通过。浏览器实际访问新路径首页，切换初中数学的 60 个专题，进入详情并请求 PDF，确认返回 HTTP 200 和 `%PDF-` 文件头；关于页面指向新仓库，未出现页面运行错误。

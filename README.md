@@ -1,4 +1,9 @@
-# 数学资料学习站
+# Lernatlas · 学科资料站
+
+Lernatlas（德语“学习地图”）按学科整理学习资料，目前专注初中数学、高中专题与竞赛拓展。
+
+- 网站：https://diewehmut.github.io/Lernatlas/
+- 仓库：https://github.com/dieWehmut/Lernatlas
 
 基于 [dieWehmut/dieWehmut.github.io](https://github.com/dieWehmut/dieWehmut.github.io) 的 Vorlage 模板构建，沿用 Vue 3、Vite、TypeScript、Element Plus 组件和主题样式，用于整理数学学习资料、讲义与配套解析。
 
@@ -33,19 +38,19 @@ pnpm preview
 | 仓库形式 | `BASE_PATH` | 访问地址示例 |
 | --- | --- | --- |
 | `USERNAME.github.io` | `/` | `https://USERNAME.github.io/` |
-| `tutor` 等项目仓库 | `/仓库名/` | `https://USERNAME.github.io/仓库名/` |
+| `Lernatlas` 等项目仓库 | `/仓库名/` | `https://USERNAME.github.io/仓库名/` |
 
 用户名页仓库的名称比较忽略大小写；项目页路径保留实际仓库名。未配置自定义域名。
 
 本地模拟项目子路径：
 
 ```bash
-BASE_PATH=/tutor/ pnpm build
-BASE_PATH=/tutor/ pnpm verify:build
-BASE_PATH=/tutor/ pnpm preview
+BASE_PATH=/Lernatlas/ pnpm build
+BASE_PATH=/Lernatlas/ pnpm verify:build
+BASE_PATH=/Lernatlas/ pnpm preview
 ```
 
-打开预览地址下的 `/tutor/`。部署为其他项目名时，将示例中的仓库名替换为实际名称。Vite 同时支持 `VITE_BASE_PATH`，设置两者时优先使用 `BASE_PATH`。`vite.config.ts` 会规范化路径，并在构建结束后将首页复制为 `404.html`，供 GitHub Pages 加载站内深层链接。
+打开预览地址下的 `/Lernatlas/`。部署为其他项目名时，将示例中的仓库名替换为实际名称。Vite 同时支持 `VITE_BASE_PATH`，设置两者时优先使用 `BASE_PATH`。`vite.config.ts` 会规范化路径，并在构建结束后将首页复制为 `404.html`，供 GitHub Pages 加载站内深层链接。
 
 ## 提交前验证
 
@@ -54,8 +59,8 @@ BASE_PATH=/tutor/ pnpm preview
 pnpm check
 
 # 构建与产物校验使用相同的部署路径；构建期间不要同时启动其他构建。
-BASE_PATH=/tutor/ pnpm build
-BASE_PATH=/tutor/ pnpm verify:build
+BASE_PATH=/Lernatlas/ pnpm build
+BASE_PATH=/Lernatlas/ pnpm verify:build
 ```
 
 也可以分别运行 `pnpm typecheck`、`pnpm test`、`pnpm test:learning-catalog`。`pnpm test` 校验目录 schema、唯一 ID、来源清单覆盖、练习与解析的双向配对、重复来源映射、分组和总计统计、原始 PDF 哈希与字节数、勘误文件名和页码，以及学习笔记源文件与编译元数据。统计由实际记录重算，再与清单比较。测试同时保留适用的公式占位符、图片整理、Vue scoped 样式和 PDF 导出相关回归检查。
