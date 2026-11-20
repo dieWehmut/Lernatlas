@@ -1,0 +1,239 @@
+{
+  "backToTop": "Back to top",
+  "settings": "Settings",
+  "language": "Language",
+  "search": {
+    "hint": "Search ..."
+  },
+  "sidebar": {
+    "lastUpdated": "Last commit: ",
+    "followers": "{count} followers"
+  },
+  "nav": {
+    "home": "Home",
+    "archive": "Archive",
+    "notes": "Notes",
+    "capture": "Capture",
+    "infra": "Infra",
+    "project": "Project",
+    "tags": "Tags",
+    "about": "About",
+    "friends": "Friends",
+    "search": "Search",
+    "pages": "Websites",
+    "services": "Services",
+    "games": "Games",
+    "apps": "Apps",
+    "tools": "Tools"
+  },
+  "common": {
+    "totalFormat": "Total {count} items",
+    "versionsCount": "{count} versions",
+    "matchedFormat": "matched {count} items",
+    "auto_loaded": "Auto-loaded from GitHub",
+    "loading": "Loading",
+    "no_match": "No matching content"
+  },
+  "action": {
+    "open": "Open",
+    "copy": "Copy",
+    "copied": "Copied",
+    "first_result_copied": "First result link copied",
+    "no_result": "No result found",
+    "copy_failed": "Copy failed",
+    "download": "Download",
+    "repo": "Repo",
+    "view": "View",
+    "expand": "Expand",
+    "collapse": "Collapse"
+  },
+  "footer": {
+    "uptime": "Uptime"
+  },
+  "header": {
+    "latestCommit": "Last commit"
+  },
+  "languages": {
+    "zh": "中文",
+    "zh_tw": "繁體",
+    "en": "English",
+    "ja": "日本語",
+    "de": "Deutsch",
+    "la": "Latin"
+  },
+  "intro": {
+    "title": "Welcome!",
+    "subtitle": "{owner}'s Nexus"
+  },
+  "project": {
+    "categories": {
+      "websites": "Websites",
+      "games": "Games",
+      "apps": "Apps",
+      "agents": "Agents",
+      "tools": "Tools",
+      "templates": "Templates"
+    }
+  },
+  "float": {
+    "viewMode": "Toggle View",
+    "toggleSidebar": "Toggle columns"
+  },
+  "error": {
+    "unable_load": "Unable to load data"
+  },
+  "status": {
+    "checking": "Checking...",
+    "online": "Online",
+    "offline": "Offline",
+    "unreachable": "Unreachable",
+    "highLatency": "High Latency",
+    "timeout": "Timeout"
+  },
+  "infra": {
+    "summary": {
+      "endpoints": "{count} service endpoints",
+      "online": "{count} online",
+      "offline": "{count} offline"
+    }
+  },
+  "capture": {
+    "title": "Capture",
+    "empty": "No capture assets found.",
+    "editor": "Editor",
+    "localDev": "Local dev editing",
+    "editorDisabled": "Disabled",
+    "editorUnavailable": "Editor unavailable",
+    "uploadImage": "Upload image",
+    "deleteImage": "Delete image",
+    "confirmDelete": "Delete {title}?",
+    "deleteDialogTitle": "Delete image",
+    "cancelDelete": "Cancel",
+    "confirmDeleteAction": "Delete",
+    "loadMore": "Load more",
+    "uploadFailed": "Upload failed.",
+    "deleteFailed": "Delete failed."
+  },
+  "console": {
+    "shell": {
+      "label": "Nexus Console",
+      "recentLabel": "Recent commands",
+      "recent": "recent",
+      "commandLabel": "Console command",
+      "suggestionsLabel": "Command suggestions",
+      "insert": "-- INSERT --",
+      "run": "Run command"
+    },
+    "overview": {
+      "iconCycle": "Icon form: {form}. Activate to cycle.",
+      "iconForm": "icon form: {form}"
+    },
+    "suggestion": {
+      "tagEntries": "{count} entries"
+    },
+    "panel": {
+      "fallback": "Console",
+      "back": "Back to previous menu",
+      "empty": "No options available.",
+      "heading": {
+        "theme": "Select theme",
+        "color": "Select color scheme",
+        "background": "Dynamic background",
+        "icon": "Select icon form",
+        "language": "Select language",
+        "mode": "Select display mode",
+        "notePicker": "Select a note",
+        "postPicker": "Select a post"
+      },
+      "list": {
+        "fallback": "Console options",
+        "theme": "Theme options",
+        "color": "Color scheme options",
+        "background": "Background options",
+        "icon": "Icon form options",
+        "language": "Language options",
+        "mode": "Display mode options",
+        "notePicker": "Notes",
+        "postPicker": "Posts"
+      }
+    },
+    "option": {
+      "theme": {
+        "night": "Low-light terminal palette",
+        "light": "High-contrast light palette"
+      },
+      "background": {
+        "on": "Keep the animated site background enabled",
+        "off": "Disable the animated site background"
+      },
+      "mode": {
+        "console": "Nexus Console desktop workspace",
+        "classic": "Standard sidebar layout"
+      },
+      "icon": {
+        "pink": "Swap the icon to pink",
+        "silver": "Swap the icon to silver",
+        "green": "Swap the icon to green",
+        "blue": "Swap the icon to blue",
+        "purple": "Swap the icon to purple",
+        "yellow": "Swap the icon to yellow",
+        "orange": "Swap the icon to orange",
+        "rose": "Swap the icon to rose",
+        "cyan": "Swap the icon to cyan",
+        "midnight": "Swap the icon to midnight",
+        "grayscale": "Drain the icon to gray",
+        "whiten": "Flatten the icon to a silhouette"
+      },
+      "color": {
+        "green": "Green",
+        "purple": "Purple",
+        "pink": "Pink",
+        "white": "White",
+        "black": "Black"
+      }
+    },
+    "feedback": {
+      "theme": "Theme set to {value}.",
+      "color": "Color scheme set to {value}.",
+      "background": "Dynamic background set to {value}.",
+      "icon": "Icon form set to {value}.",
+      "language": "Language set to {value}.",
+      "modeConsole": "Nexus Console enabled.",
+      "modeClassic": "Standard layout enabled.",
+      "exported": "Article exported as PDF.",
+      "exportFailed": "Article could not be exported.",
+      "navigationFailed": "Navigation could not be completed."
+    },
+    "group": {
+      "navigate": "Move around",
+      "page": "Act on the page you are reading",
+      "appearance": "Change how the site looks",
+      "console": "The console itself"
+    },
+    "command": {
+      "home": "Browse the Home timeline",
+      "posts": "Browse the post archive",
+      "notes": "Browse the note index",
+      "comment": "Jump to the comment box for this page",
+      "export": "Export this article as PDF",
+      "post": "Select a post",
+      "note": "Select a note",
+      "capture": "Browse captured assets",
+      "infra": "Inspect service status",
+      "project": "Browse projects",
+      "tags": "Browse tags",
+      "about": "Read site information",
+      "friends": "Browse friend links",
+      "search": "Search as you type, e.g. /search vue",
+      "theme": "Choose light or dark theme",
+      "color": "Choose a color scheme",
+      "background": "Configure the dynamic background",
+      "icon": "Choose how the console icon is drawn",
+      "language": "Choose interface language",
+      "mode": "Choose Console or standard layout",
+      "mode_classic": "Return to the standard layout",
+      "mode_console": "Use Nexus Console",
+      "help": "Read the command reference"
+    }
+  }
+}

@@ -1,0 +1,654 @@
+<template>
+  <div
+    class="float-controls"
+    :class="{ 'is-top-hidden': atTop, 'is-console': isConsole }"
+    aria-label="Quick controls"
+  >
+    <div class="float-controls__langs" :class="{ 'is-open': languageOpen }" :style="slotStyle('language')">
+      <button
+        v-for="lang in languages"
+        :key="lang.code"
+        class="float-controls__button float-controls__lang"
+        :class="{ 'is-active': locale === lang.code }"
+        type="button"
+        :title="lang.name"
+        :aria-label="lang.name"
+        :aria-hidden="!languageOpen"
+        :tabindex="languageOpen ? 0 : -1"
+        @click="selectLanguage(lang.code)"
+      >
+        {{ lang.label }}
+      </button>
+    </div>
+
+    <div class="float-controls__schemes" :class="{ 'is-open': colorSchemeOpen }" :style="slotStyle('color')">
+      <button
+        v-for="scheme in colorSchemeOptions"
+        :key="scheme.id"
+        class="float-controls__button float-controls__scheme"
+        :class="{ 'is-active': colorScheme === scheme.id }"
+        type="button"
+        :title="scheme.label"
+        :aria-label="scheme.label"
+        :aria-hidden="!colorSchemeOpen"
+        :tabindex="colorSchemeOpen ? 0 : -1"
+        :style="{ '--scheme-color': scheme.preview }"
+        @click="selectColorScheme(scheme.id)"
+      >
+        <span class="float-controls__scheme-swatch" aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <button
+      v-if="isDesktop"
+      class="float-controls__button float-controls__opt-mode"
+      :class="{ 'is-visible': settingsOpen, 'is-active': isConsole }"
+      type="button"
+      :title="isConsole ? 'Switch to standard layout' : 'Switch to Nexus Console'"
+      :aria-label="isConsole ? 'Switch to standard layout' : 'Switch to Nexus Console'"
+      :aria-pressed="isConsole"
+      :aria-hidden="!settingsOpen"
+      :tabindex="settingsOpen ? 0 : -1"
+      :style="slotStyle('mode')"
+      @click="toggleDisplayMode"
+    >
+      <span class="float-controls__terminal-mark" aria-hidden="true">&gt;_</span>
+    </button>
+
+    <button
+      class="float-controls__button float-controls__opt-dynamic"
+      :class="{ 'is-visible': settingsOpen, 'is-active': dynamicBackgroundEnabled }"
+      type="button"
+      title="Toggle dynamic background"
+      aria-label="Toggle dynamic background"
+      :aria-hidden="!settingsOpen"
+      :tabindex="settingsOpen ? 0 : -1"
+      :style="slotStyle('dynamic')"
+      @click="toggleDynamicBackground"
+    >
+      <el-icon><MagicStick /></el-icon>
+    </button>
+
+    <button
+      class="float-controls__button float-controls__opt-language"
+      :class="{ 'is-visible': settingsOpen }"
+      type="button"
+      title="Language"
+      aria-label="Language"
+      :aria-expanded="languageOpen"
+      :aria-hidden="!settingsOpen"
+      :tabindex="settingsOpen ? 0 : -1"
+      :style="slotStyle('language')"
+      @click="toggleLanguagePanel"
+    >
+      <span class="float-controls__globe">Aa</span>
+    </button>
+
+    <button
+      class="float-controls__button float-controls__opt-color"
+      :class="{ 'is-visible': settingsOpen, 'is-active': colorSchemeOpen }"
+      type="button"
+      title="Color scheme"
+      aria-label="Color scheme"
+      :aria-expanded="colorSchemeOpen"
+      :aria-hidden="!settingsOpen"
+      :tabindex="settingsOpen ? 0 : -1"
+      :style="slotStyle('color')"
+      @click="toggleColorSchemePanel"
+    >
+      <el-icon><Brush /></el-icon>
+    </button>
+
+    <button
+      v-if="isDesktop"
+      class="float-controls__button float-controls__opt-sidebar"
+      :class="{ 'is-visible': settingsOpen, 'is-active': sidebarCollapsed }"
+      type="button"
+      :title="sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'"
+      :aria-label="sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'"
+      :aria-pressed="sidebarCollapsed"
+      :aria-hidden="!settingsOpen"
+      :tabindex="settingsOpen ? 0 : -1"
+      :style="slotStyle('sidebar')"
+      @click="toggleSidebar"
+    >
+      <Transition name="float-swap" mode="out-in">
+        <el-icon v-if="sidebarCollapsed" key="expand"><Expand /></el-icon>
+        <el-icon v-else key="fold"><Fold /></el-icon>
+      </Transition>
+    </button>
+
+    <button
+      class="float-controls__button float-controls__opt-theme"
+      :class="{ 'is-visible': settingsOpen }"
+      type="button"
+      title="Toggle theme"
+      aria-label="Toggle theme"
+      :aria-hidden="!settingsOpen"
+      :tabindex="settingsOpen ? 0 : -1"
+      :style="slotStyle('theme')"
+      @click="toggleTheme"
+    >
+      <el-icon><Sunny v-if="theme === 'dark'" /><Moon v-else /></el-icon>
+    </button>
+
+    <button
+      class="float-controls__button float-controls__settings"
+      type="button"
+      title="Settings"
+      aria-label="Settings"
+      :aria-expanded="settingsOpen"
+      @click="toggleSettings"
+    >
+      <el-icon><Setting /></el-icon>
+    </button>
+
+    <button
+      class="float-controls__button float-controls__top"
+      type="button"
+      title="Back to top"
+      aria-label="Back to top"
+      @click="scrollToTop"
+    >
+      <el-icon><Top /></el-icon>
+    </button>
+  </div>
+</template>
+
+<script setup>
+import { computed, nextTick, ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { Brush, Expand, Fold, MagicStick, Setting, Top, Moon, Sunny } from '@element-plus/icons-vue'
+import { useBackgroundPreference } from '../../composables/useBackgroundPreference'
+import { useColorSchemePreference } from '../../composables/useColorSchemePreference'
+import { useThemePreference } from '../../composables/useThemePreference'
+import { useDisplayModePreference } from '../../composables/useDisplayModePreference'
+import { useSidebarPreference } from '../../composables/useSidebarPreference'
+
+const { locale } = useI18n()
+const { dynamicBackgroundEnabled, toggleDynamicBackground } = useBackgroundPreference()
+const { colorScheme, colorSchemeOptions, setColorScheme } = useColorSchemePreference()
+const { theme, toggleTheme: toggleThemePreference } = useThemePreference()
+const { isDesktop, isConsole, toggleDisplayMode: toggleDisplayModePreference } = useDisplayModePreference()
+const { sidebarCollapsed, toggleSidebarCollapsed } = useSidebarPreference()
+
+const settingsOpen = ref(false)
+const languageOpen = ref(false)
+const colorSchemeOpen = ref(false)
+const atTop = ref(true)
+
+/**
+ * The option rows stack upwards from the settings button in a single rhythm, so
+ * each one only needs its place in the queue: the stylesheet turns that into a
+ * `bottom` from one step size. Rows that are not rendered never claim a place,
+ * which is what lets the desktop-only rows appear without leaving mobile a gap.
+ */
+const rowSlots = computed(() => {
+  const rows = ['theme']
+  if (isDesktop.value) rows.push('sidebar')
+  rows.push('color', 'language', 'dynamic')
+  if (isDesktop.value) rows.push('mode')
+
+  return Object.fromEntries(rows.map((row, index) => [row, index + 1]))
+})
+
+function slotStyle(row) {
+  return { '--fc-slot': String(rowSlots.value[row] ?? 0) }
+}
+
+function onScroll() {
+  atTop.value = window.scrollY < 60
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', onScroll, { passive: true })
+  document.addEventListener('scroll', onScroll, { passive: true, capture: true })
+  onScroll()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', onScroll)
+  document.removeEventListener('scroll', onScroll, true)
+})
+
+watch([isConsole, isDesktop], () => void nextTick(onScroll))
+
+const languages = [
+  { code: 'zh', label: 'CN', name: 'Simplified Chinese' },
+  { code: 'zh_tw', label: 'TW', name: 'Traditional Chinese' },
+  { code: 'en', label: 'EN', name: 'English' },
+  { code: 'ja', label: 'JA', name: 'Japanese' },
+  { code: 'de', label: 'DE', name: 'German' },
+  { code: 'la', label: 'LA', name: 'Latin' },
+]
+
+function toggleSettings() {
+  settingsOpen.value = !settingsOpen.value
+  if (!settingsOpen.value) {
+    languageOpen.value = false
+    colorSchemeOpen.value = false
+  }
+}
+
+function toggleLanguagePanel() {
+  languageOpen.value = !languageOpen.value
+  if (languageOpen.value) colorSchemeOpen.value = false
+}
+
+function toggleColorSchemePanel() {
+  colorSchemeOpen.value = !colorSchemeOpen.value
+  if (colorSchemeOpen.value) languageOpen.value = false
+}
+
+function selectLanguage(code) {
+  locale.value = code
+  try {
+    localStorage.setItem('locale', code)
+  } catch {}
+}
+
+function selectColorScheme(scheme) {
+  setColorScheme(scheme)
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+function toggleTheme() {
+  toggleThemePreference()
+}
+
+function toggleDisplayMode() {
+  toggleDisplayModePreference()
+}
+
+function toggleSidebar() {
+  toggleSidebarCollapsed()
+}
+</script>
+
+<style scoped>
+.float-controls {
+  position: fixed;
+  right: 4px;
+  bottom: 20px;
+  z-index: 80;
+  width: 48px;
+  pointer-events: none;
+  /* The stack is a ladder: the settings button sits on `--fc-base` and every
+     option row above it is one `--fc-step` further up. Each row carries only its
+     slot number (inline, from the component), so inserting or dropping a row
+     never means retuning a column of literals. */
+  --fc-step: 50px;
+  --fc-base: 50px;
+}
+
+.float-controls.is-top-hidden {
+  --fc-base: 0px;
+}
+
+.float-controls__button {
+  position: absolute;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--site-border);
+  border-radius: 10px;
+  color: var(--site-text);
+  background: var(--site-sidebar-bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  pointer-events: auto;
+  font-size: 20px;
+  transition:
+    bottom 200ms ease,
+    transform 180ms ease,
+    opacity 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+
+:root[data-theme="light"] .float-controls__button {
+  border-color: rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: none;
+}
+
+.float-controls__button:hover,
+.float-controls__button:focus-visible {
+  border-color: rgb(var(--site-accent-rgb) / 0.5);
+  color: var(--site-accent);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.float-controls__top {
+  bottom: 0;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.float-controls.is-top-hidden .float-controls__top {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px) scale(0.92);
+}
+
+.float-controls__settings {
+  bottom: var(--fc-base);
+  border-color: rgb(var(--site-accent-rgb) / 0.18);
+  color: var(--site-text);
+  background: rgba(10, 10, 10, 0.74);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
+  transition:
+    bottom 200ms ease,
+    transform 150ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.float-controls.is-top-hidden .float-controls__settings {
+  bottom: var(--fc-base);
+}
+
+.float-controls__settings :deep(.el-icon) {
+  animation: settings-spin 2s linear infinite;
+}
+
+.float-controls__settings:hover,
+.float-controls__settings:focus-visible {
+  border-color: var(--site-accent);
+  color: var(--site-accent);
+  background: rgb(var(--site-accent-rgb) / 0.1);
+  box-shadow:
+    0 0 0 1px rgb(var(--site-accent-rgb) / 0.12),
+    0 14px 40px rgba(0, 0, 0, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.float-controls__settings:hover :deep(.el-icon),
+.float-controls__settings:focus-visible :deep(.el-icon) {
+  animation: none;
+}
+
+:root[data-theme="light"] .float-controls__settings {
+  border-color: rgba(255, 255, 255, 0.68);
+  color: var(--site-text);
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.76);
+}
+
+:root[data-theme="light"] .float-controls__settings:hover,
+:root[data-theme="light"] .float-controls__settings:focus-visible {
+  border-color: var(--site-accent);
+  color: var(--site-accent);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.float-controls__opt-dynamic,
+.float-controls__opt-mode,
+.float-controls__opt-language,
+.float-controls__opt-color,
+.float-controls__opt-sidebar,
+.float-controls__opt-theme {
+  bottom: calc(var(--fc-base) + var(--fc-slot, 0) * var(--fc-step));
+  opacity: 0;
+  transform: translateY(8px) scale(0.95);
+  pointer-events: none;
+  transition:
+    bottom 200ms ease,
+    transform 180ms ease,
+    opacity 180ms ease;
+}
+
+.float-controls__opt-dynamic.is-visible,
+.float-controls__opt-mode.is-visible,
+.float-controls__opt-language.is-visible,
+.float-controls__opt-color.is-visible,
+.float-controls__opt-sidebar.is-visible,
+.float-controls__opt-theme.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* The sidebar mark turns over rather than cutting, so the button reads as one
+   control changing state instead of two controls trading places. */
+.float-swap-enter-active,
+.float-swap-leave-active {
+  transition: transform 200ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 140ms ease;
+}
+
+.float-swap-enter-from {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.55);
+}
+
+.float-swap-leave-to {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.55);
+}
+
+.float-controls__button.is-active {
+  color: var(--site-accent);
+  border-color: rgb(var(--site-accent-rgb) / 0.58);
+  background: rgb(var(--site-accent-rgb) / 0.14);
+}
+
+.float-controls__globe {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.float-controls__terminal-mark {
+  font-family: var(--site-font-mono);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.float-controls__langs {
+  position: absolute;
+  right: 54px;
+  bottom: calc(var(--fc-base) + var(--fc-slot, 0) * var(--fc-step));
+  display: flex;
+  gap: 10px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(8px) scale(0.95);
+  pointer-events: none;
+  transition: transform 200ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 200ms ease, visibility 0ms 200ms, bottom 200ms ease;
+}
+
+.float-controls__langs.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+  transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 200ms ease, visibility 0ms 0ms;
+}
+
+.float-controls__lang {
+  position: static;
+  width: 44px;
+  height: 44px;
+  font-size: 12px;
+  font-weight: 900;
+  opacity: 0;
+  transform: translateX(8px) scale(0.9);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.float-controls__langs.is-open .float-controls__lang {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.float-controls__langs.is-open .float-controls__lang:nth-child(1) { transition-delay: 20ms; }
+.float-controls__langs.is-open .float-controls__lang:nth-child(2) { transition-delay: 50ms; }
+.float-controls__langs.is-open .float-controls__lang:nth-child(3) { transition-delay: 80ms; }
+.float-controls__langs.is-open .float-controls__lang:nth-child(4) { transition-delay: 110ms; }
+.float-controls__langs.is-open .float-controls__lang:nth-child(5) { transition-delay: 140ms; }
+.float-controls__langs.is-open .float-controls__lang:nth-child(6) { transition-delay: 170ms; }
+
+.float-controls__schemes {
+  position: absolute;
+  right: 54px;
+  bottom: calc(var(--fc-base) + var(--fc-slot, 0) * var(--fc-step));
+  display: flex;
+  gap: 10px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(8px) scale(0.95);
+  pointer-events: none;
+  transition: transform 200ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 200ms ease, visibility 0ms 200ms, bottom 200ms ease;
+}
+
+.float-controls__schemes.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+  transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 200ms ease, visibility 0ms 0ms;
+}
+
+.float-controls__scheme {
+  position: static;
+  width: 44px;
+  height: 44px;
+  opacity: 0;
+  transform: translateX(8px) scale(0.9);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.float-controls__schemes.is-open .float-controls__scheme {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+.float-controls__schemes.is-open .float-controls__scheme:nth-child(1) { transition-delay: 20ms; }
+.float-controls__schemes.is-open .float-controls__scheme:nth-child(2) { transition-delay: 50ms; }
+.float-controls__schemes.is-open .float-controls__scheme:nth-child(3) { transition-delay: 80ms; }
+.float-controls__schemes.is-open .float-controls__scheme:nth-child(4) { transition-delay: 110ms; }
+.float-controls__schemes.is-open .float-controls__scheme:nth-child(5) { transition-delay: 140ms; }
+.float-controls__schemes.is-open .float-controls__scheme:nth-child(6) { transition-delay: 170ms; }
+.float-controls__schemes.is-open .float-controls__scheme:nth-child(7) { transition-delay: 200ms; }
+.float-controls__schemes.is-open .float-controls__scheme:nth-child(8) { transition-delay: 230ms; }
+
+.float-controls__scheme-swatch {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.64);
+  border-radius: 50%;
+  background: var(--scheme-color);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.28);
+}
+
+/* light 主题下按钮底色是 rgba(255,255,255,0.9)，白色描边会让 white swatch 整块消失 */
+:root[data-theme="light"] .float-controls__scheme-swatch {
+  border-color: rgba(0, 0, 0, 0.36);
+}
+
+@keyframes settings-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.float-controls.is-console .float-controls__button {
+  border-radius: 0;
+  box-shadow: none !important;
+  transition: none !important;
+}
+
+.float-controls.is-console .float-controls__settings {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.float-controls.is-console .float-controls__settings :deep(.el-icon) {
+  animation: none;
+}
+
+.float-controls.is-console .float-controls__button:hover,
+.float-controls.is-console .float-controls__button:focus-visible {
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.float-controls.is-console .float-controls__langs,
+.float-controls.is-console .float-controls__schemes,
+.float-controls.is-console .float-controls__lang,
+.float-controls.is-console .float-controls__scheme {
+  transition: none !important;
+}
+
+@media (max-width: 900px) {
+  .float-controls {
+    right: 4px;
+    bottom: 14px;
+    /* Narrower buttons, so a shorter rung — the whole ladder retunes from here. */
+    --fc-step: 46px;
+    --fc-base: 46px;
+  }
+
+  .float-controls__button {
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+  }
+
+  .float-controls__globe,
+  .float-controls__lang {
+    font-size: 11px;
+  }
+
+  .float-controls__langs {
+    right: 48px;
+    display: grid;
+    grid-template-columns: repeat(3, 38px);
+    column-gap: 8px;
+    row-gap: 6px;
+    width: auto;
+    justify-content: end;
+  }
+
+  .float-controls__schemes {
+    right: 48px;
+  }
+
+  .float-controls__scheme {
+    width: 38px;
+    height: 38px;
+  }
+
+  .float-controls__scheme-swatch {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .float-controls__button,
+  .float-controls__langs,
+  .float-controls__schemes,
+  .float-swap-enter-active,
+  .float-swap-leave-active {
+    transition: none;
+  }
+
+  .float-controls__settings :deep(.el-icon) {
+    animation: none;
+  }
+}
+</style>

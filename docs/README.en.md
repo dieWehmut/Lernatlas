@@ -1,0 +1,107 @@
+<h1 align="center">Vorlage</h1>
+
+<p align="center">
+  <img src="https://count.getloli.com/get/@Vorlage?theme=rule34" alt="Visitors">
+</p>
+
+<div align="center">
+
+<div>
+<a href="https://diewehmut.github.io/Vorlage/" target="_blank">
+  <img src="https://img.shields.io/badge/TEMPLATE-DEMO-1FC41F?style=flat-square&logo=githubpages&logoColor=white&labelColor=555555" alt="Template Demo">
+</a>
+<a href="https://diewehmut.github.io/" target="_blank">
+  <img src="https://img.shields.io/badge/PRODUCTION-DEMO-F9D553?style=flat-square&logo=google-chrome&logoColor=white&labelColor=555555" alt="Production Demo">
+</a>
+</div>
+
+<div>
+<a href="https://vuejs.org/" target="_blank">
+  <img src="https://img.shields.io/badge/VUE-3-42B883?style=flat-square&logo=vuedotjs&logoColor=white&labelColor=555555" alt="Vue 3">
+</a>
+<a href="https://vite.dev/" target="_blank">
+  <img src="https://img.shields.io/badge/VITE-7-646CFF?style=flat-square&logo=vite&logoColor=white&labelColor=555555" alt="Vite">
+</a>
+<a href="https://github.com/dieWehmut/Vorlage/blob/main/LICENSE">
+  <img src="https://img.shields.io/badge/LICENSE-MIT-green?style=flat-square&logo=github&logoColor=white&labelColor=555555" alt="License">
+</a>
+</div>
+
+</div>
+
+<div align="center">
+
+[简体中文](../README.md) | [繁體中文](README.zh-TW.md) | English | [日本語](README.ja.md)
+
+</div>
+
+---
+
+`Vorlage` is a personal website template built with `Vue 3 + Vite + TypeScript + Element Plus`, with a built-in **Sandkasten code sandbox** and binary infrastructure reachability dashboard. It works for blogs, notes, project showcases, friend links, and ops-style dashboards.
+
+## Demos
+
+- Example repository: <https://github.com/dieWehmut/dieWehmut.github.io>
+- Template demo: <https://diewehmut.github.io/Vorlage/>
+- Production demo: <https://diewehmut.github.io/>
+
+If the template demo does not open, check `Settings -> Pages -> Source` and set it to `GitHub Actions`. The deploy workflow automatically sets the Vite base path for project Pages repositories.
+
+## Quick Start
+
+```bash
+git clone https://github.com/dieWehmut/Vorlage.git my-site
+cd my-site
+pnpm install
+pnpm dev
+```
+
+Edit `src/data/site/config.ts` first, then replace the sample posts, notes, friends, and project data under `src/data`.
+
+## Deployment
+
+Push to `main`. The included GitHub Actions workflow builds and deploys the site to GitHub Pages.
+
+Required GitHub setting:
+
+1. Open `Settings -> Pages`
+2. Set `Source` to `GitHub Actions`
+3. For project repositories, use `https://YOUR_USERNAME.github.io/YOUR_REPO/`
+
+## Go Code Runner
+
+The template runs code through a Sandkasten HTTP API:
+
+```env
+VITE_CODE_RUNNER_API_URL=https://your-sandkasten-api.example.com
+VITE_CODE_RUNNER_API_TOKEN=
+```
+
+Vite embeds these values in public JavaScript, so `VITE_CODE_RUNNER_API_TOKEN` must not contain a private server token.
+
+## Infra status probing
+
+The Infra page reports a service as online only when the upstream's final HTTP status is exactly `200`. Statuses such as `201`, `204`, redirects, errors, and network failures are offline.
+
+For production endpoints that do not expose browser-readable CORS headers, configure a public probe proxy in the Pages workflow:
+
+```yaml
+VITE_INFRA_PROBE_URL: ${{ vars.VITE_INFRA_PROBE_URL || secrets.API_PROXY_BASE }}
+```
+
+The proxy must expose `GET /api/ping?url=<encoded-target>` and return HTTP `200` with `{ "online": true }` only when the upstream's final response is HTTP `200`. It must allow credential-free CORS from the deployed site and enforce an upstream hostname allowlist to prevent an SSRF/open-proxy service. `VITE_INFRA_PROBE_URL` is embedded in public browser JavaScript and must not contain credentials.
+
+The Pages build also generates `public/infra-status.json` from `src/data/site/infra.ts`: GitHub Actions probes each URL server-side using the final HTTP status, and the browser prefers this same-origin snapshot before falling back to the proxy or a direct browser probe. The workflow runs every 15 minutes; run `pnpm infra:status:sync` to refresh it manually. CORS-blocked targets without a usable snapshot or proxy remain offline.
+
+## Commands
+
+```bash
+pnpm dev
+pnpm typecheck
+pnpm build
+pnpm preview
+```
+
+## License
+
+MIT

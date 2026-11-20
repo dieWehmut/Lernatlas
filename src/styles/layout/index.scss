@@ -1,0 +1,112 @@
+:root {
+  color-scheme: dark;
+  /* How wide the sidebar panel itself is drawn. Kept apart from the width below
+     because a panel that slides away still needs a width to slide out of: if the
+     two collapsed together the panel would shrink to nothing in place instead of
+     travelling, and `translateX(-100%)` of a zero-width box moves nowhere. */
+  --site-sidebar-panel-width: 230px;
+  /* How much room the content column yields to the sidebar. */
+  --site-sidebar-width: var(--site-sidebar-panel-width);
+  --site-mobile-header-height: 62px;
+  --site-content-width: 1120px;
+  --site-desktop-content-gutter: clamp(30px, 2.6vw, 40px);
+  --site-desktop-content-end-gutter: 64px;
+  --site-view-aside-gap: 28px;
+  --site-scroll-spy-width: 180px;
+  --site-route-path-height: 40px;
+  --site-mesh-line-row: linear-gradient(color-mix(in srgb, var(--site-accent) 5%, transparent) 1px, transparent 1px);
+  --site-mesh-line-column: linear-gradient(90deg, color-mix(in srgb, var(--site-accent) 4%, transparent) 1px, transparent 1px);
+  --site-mesh-glow: radial-gradient(circle at 18% 8%, color-mix(in srgb, var(--site-accent) 10%, transparent), transparent 30%);
+  --site-mesh-background-size: 28px 28px, 28px 28px, auto, auto;
+  --site-right-rail-offset: max(
+    var(--site-desktop-content-end-gutter),
+    calc(100vw - var(--site-sidebar-width) - var(--site-desktop-content-gutter) - var(--site-content-width))
+  );
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-width: 0;
+  min-height: 100%;
+}
+
+html {
+  scroll-padding-top: calc(var(--site-route-path-height) + 12px);
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  color: var(--site-text);
+  background: var(--site-bg);
+  font-family:
+    "LXGW WenKai",
+    "LXGW WenKai Screen",
+    "Noto Serif SC",
+    "Microsoft YaHei",
+    system-ui,
+    sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+#app {
+  min-height: 100vh;
+  background: var(--site-bg);
+}
+
+
+.page-surface {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 1180px) {
+  :root {
+    --site-sidebar-panel-width: 220px;
+  }
+}
+
+/* Collapsing the classic shell to a single column is one token: every consumer
+   (content margin, main width, breadcrumb offset, footer, comments, right rail)
+   already derives its own geometry from it. Desktop only — below 901px this same
+   token is the slide-in drawer's width, and a drawer with no width cannot open. */
+@media (min-width: 901px) {
+  html.sidebar-collapsed {
+    --site-sidebar-width: 0px;
+  }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --site-sidebar-panel-width: min(82vw, 320px);
+  }
+
+  body {
+    background: var(--site-bg);
+  }
+
+  html {
+    scroll-padding-top: calc(var(--site-mobile-header-height) + 18px);
+  }
+}

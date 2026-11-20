@@ -1,0 +1,523 @@
+<template>
+  <div
+    ref="cursorRef"
+    v-show="visible"
+    class="heart-bounce-cursor"
+    aria-hidden="true"
+  >
+    <div class="heart-bounce-cursor__icon">
+      <div class="ripple" aria-hidden="true"></div>
+    </div>
+  </div>
+  <canvas
+    ref="dotsCanvasRef"
+    v-show="ringVisible"
+    class="heart-dots-canvas"
+    aria-hidden="true"
+  ></canvas>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { siteColorSchemes } from '../../data/site/theme'
+import { useMotionPreferences } from '../../composables/useMotionPreferences'
+import { useColorSchemePreference } from '../../composables/useColorSchemePreference'
+import { useThemePreference } from '../../composables/useThemePreference'
+import { useBackgroundPreference } from '../../composables/useBackgroundPreference'
+import { useDisplayModePreference } from '../../composables/useDisplayModePreference'
+import { POINTER_EFFECTS_RESET_EVENT } from '../../utils/pointerEffects'
+
+const cursorRef = ref(null)
+const dotsCanvasRef = ref(null)
+const visible = ref(false)
+const { canUsePointerEffects } = useMotionPreferences()
+const { colorScheme } = useColorSchemePreference()
+const { theme } = useThemePreference()
+const { dynamicBackgroundEnabled } = useBackgroundPreference()
+const { isConsole } = useDisplayModePreference()
+
+const pointerEffectsEnabled = computed(
+  () => canUsePointerEffects.value && dynamicBackgroundEnabled.value && !isConsole.value,
+)
+
+// 点环、流线与爱心指针都只属于「动态背景」这一档效果。
+const ringVisible = computed(
+  () => visible.value && canUsePointerEffects.value && dynamicBackgroundEnabled.value && !isConsole.value,
+)
+
+// ── 弹性点环（仿 cnblogs type:12 / mouseType3）─────────────────────────────
+// 头点跟随爱心中心，多条链沿角度放射，每个点弹性追踪父点
+// 点的颜色跟随当前配色 + 明暗的 accent 色
+const RING_SPEED   = 4     // 追踪阻尼（越大越滞后柔软）
+const RING_ANIM_R  = 2     // 弹簧系数
+const RING_ANGLE_STEP = 30 // 每条链的角度间隔（度）→ 12 条
+const RING_R_MIN   = 10    // 链上点的最小半径
+const RING_R_MAX   = 34    // 链上点的最大半径
+const RING_R_STEP  = 2     // 半径步进（越大点越少）→ 每链 12 点
+const RING_DOT_SIZE = 2.5   // 点直径 px
+const RING_SPIN_SPEED = 0.012 // 自旋角速度（rad/帧）→ 60fps 下约一圈 8.7s
+const RING_TRAIL_LEN = 16     // 尾点流线长度 px（沿切向）
+const RING_TRAIL_WIDTH = 0.42 // 流线宽度 px
+const RING_TRAIL_CURVE = 4.5  // 流线弯曲量 px（沿半径方向偏移控制点，随长度等比放大保持弧度）
+
+// 点环颜色跟 accent 走。直接查配色表而不是 getComputedStyle 读 --site-accent：
+// 后者要等 applySiteColorScheme 把变量写完才准，watcher 顺序一变就会读到上一次的值。
+// 配色和明暗两个轴都会改变 accent，所以两者都要进依赖。
+const accentColor = computed(() => siteColorSchemes[colorScheme.value][theme.value].accent)
+let ringColor = accentColor.value
+
+let dotsCtx = null
+let dotsW = 0
+let dotsH = 0
+let dotsDpr = 1
+let ringNodes = []          // 弹性点节点
+// 上一帧点环包围盒（逻辑坐标），脏矩形清除用，避免全屏 clearRect
+let prevDirty = null
+let ringAnimId = null
+// 头点目标（爱心中心，逻辑坐标）
+const ringTarget = { x: -9999, y: -9999 }
+
+// 全局自旋角（每帧递增），让点环静止时也缓慢绕中心自转
+let ringSpin = 0
+
+/** 一个弹性点节点：以极坐标 (baseRad, offR) 存相对父点的偏移，便于整体旋转 */
+function makeRingNode(parent, baseRad, offR) {
+  return {
+    parent, baseRad, offR,
+    cx: 0, cy: 0, // 每帧由 baseRad + ringSpin 重算
+    ddx: 0, ddy: 0, px: 0, py: 0, x: 0, y: 0,
+    isTail: false,
+  }
+}
+
+function buildRing() {
+  ringNodes = []
+  // 头点（index 0）：直接跟随爱心中心，无偏移
+  const head = makeRingNode(null, 0, 0)
+  ringNodes.push(head)
+  for (let ang = 0; ang < 360; ang += RING_ANGLE_STEP) {
+    const rad = (ang * Math.PI) / 180
+    let prev = head
+    let tail = null
+    for (let r = RING_R_MIN; r < RING_R_MAX; r += RING_R_STEP) {
+      // 偏移半径 = r/4（与样例一致），角度随全局自旋旋转
+      const node = makeRingNode(prev, rad, r / 4)
+      ringNodes.push(node)
+      prev = node
+      tail = node
+    }
+    // 每条链最外侧的点：旋转时拖一条细小切向流线
+    if (tail) tail.isTail = true
+  }
+}
+
+function resizeDots() {
+  const canvas = dotsCanvasRef.value
+  if (!canvas) return
+  dotsDpr = window.devicePixelRatio || 1
+  dotsW = window.innerWidth
+  dotsH = window.innerHeight
+  canvas.width = dotsW * dotsDpr
+  canvas.height = dotsH * dotsDpr
+  canvas.style.width = dotsW + 'px'
+  canvas.style.height = dotsH + 'px'
+  dotsCtx = canvas.getContext('2d', { alpha: true })
+  dotsCtx.setTransform(1, 0, 0, 1, 0, 0)
+  dotsCtx.scale(dotsDpr, dotsDpr)
+  prevDirty = null // 画布尺寸变了，旧脏矩形失效
+}
+
+function stepRing() {
+  // 每帧推进全局自旋角，保持在 [0, 2π) 避免浮点无限增长
+  ringSpin += RING_SPIN_SPEED
+  if (ringSpin >= Math.PI * 2) ringSpin -= Math.PI * 2
+
+  const n = ringNodes.length
+  for (let i = 0; i < n; i++) {
+    const node = ringNodes[i]
+    // 头点（无 parent）不旋转；其余按 baseRad + 自旋角实时重算偏移目标
+    if (node.parent) {
+      const ang = node.baseRad + ringSpin
+      node.cx = node.offR * Math.cos(ang)
+      node.cy = node.offR * Math.sin(ang)
+    }
+    const x0 = node.parent ? node.parent.x : ringTarget.x
+    const y0 = node.parent ? node.parent.y : ringTarget.y
+    node.ddx += (x0 - node.px - node.ddx + node.cx) / RING_ANIM_R
+    node.ddy += (y0 - node.py - node.ddy + node.cy) / RING_ANIM_R
+    node.px += node.ddx / RING_SPEED
+    node.py += node.ddy / RING_SPEED
+    node.x = node.px
+    node.y = node.py
+  }
+}
+
+// 上一帧点环包围盒（逻辑坐标），用于脏矩形清除，避免全屏 clearRect
+function drawRing() {
+  if (!dotsCtx) return
+  const half = RING_DOT_SIZE / 2
+  const n = ringNodes.length
+
+  // 只清除上一帧绘制过的区域，而不是整块全屏画布
+  if (prevDirty) {
+    dotsCtx.clearRect(prevDirty.x, prevDirty.y, prevDirty.w, prevDirty.h)
+  }
+
+  // 一趟计算包围盒并绘制（单一主题色）
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+  dotsCtx.fillStyle = ringColor
+  dotsCtx.strokeStyle = ringColor
+  dotsCtx.lineWidth = RING_TRAIL_WIDTH
+  dotsCtx.lineCap = 'round'
+  const acc = (x, y) => {
+    if (x < minX) minX = x
+    if (y < minY) minY = y
+    if (x > maxX) maxX = x
+    if (y > maxY) maxY = y
+  }
+  for (let i = 1; i < n; i++) {
+    const node = ringNodes[i]
+    const x = node.x, y = node.y
+    dotsCtx.fillRect(x - half, y - half, RING_DOT_SIZE, RING_DOT_SIZE)
+    acc(x, y)
+    // 尾点：沿切向反方向拖一条细流线，用贝塞尔弯曲成顺圆周的弧
+    if (node.isTail) {
+      const ang = node.baseRad + ringSpin
+      // 切向 = 半径方向 +90°；自旋角递增，拖尾指向切向反方向
+      const tx = Math.sin(ang)
+      const ty = -Math.cos(ang)
+      const ex = x + tx * RING_TRAIL_LEN
+      const ey = y + ty * RING_TRAIL_LEN
+      // 控制点在流线中点，沿半径方向（cos,sin）外偏，形成弯月弧度
+      const rx = Math.cos(ang)
+      const ry = Math.sin(ang)
+      const cxp = x + tx * RING_TRAIL_LEN * 0.5 + rx * RING_TRAIL_CURVE
+      const cyp = y + ty * RING_TRAIL_LEN * 0.5 + ry * RING_TRAIL_CURVE
+      dotsCtx.beginPath()
+      dotsCtx.moveTo(x, y)
+      dotsCtx.quadraticCurveTo(cxp, cyp, ex, ey)
+      dotsCtx.stroke()
+      acc(ex, ey)
+      acc(cxp, cyp)
+    }
+  }
+
+  // 记录本帧脏矩形（含点尺寸 + 1px 余量），供下一帧清除
+  if (maxX >= minX) {
+    prevDirty = {
+      x: minX - half - 1,
+      y: minY - half - 1,
+      w: (maxX - minX) + RING_DOT_SIZE + 2,
+      h: (maxY - minY) + RING_DOT_SIZE + 2,
+    }
+  } else {
+    prevDirty = null
+  }
+}
+
+function ringLoop() {
+  stepRing()
+  drawRing()
+  ringAnimId = requestAnimationFrame(ringLoop)
+}
+
+function seedRingAtTarget() {
+  // 把所有节点初始位置对齐到当前目标，避免从 (0,0) 飞入的突兀感
+  if (ringTarget.x < 0) return
+  for (let i = 0; i < ringNodes.length; i++) {
+    const node = ringNodes[i]
+    // 先按当前自旋角算好偏移，否则 cx/cy 尚为 0 会让点先堆在中心再炸开
+    if (node.parent) {
+      const ang = node.baseRad + ringSpin
+      node.cx = node.offR * Math.cos(ang)
+      node.cy = node.offR * Math.sin(ang)
+    }
+    node.px = node.x = ringTarget.x + node.cx
+    node.py = node.y = ringTarget.y + node.cy
+    node.ddx = 0
+    node.ddy = 0
+  }
+}
+
+function startRing() {
+  if (ringAnimId != null) return
+  resizeDots()
+  ringColor = accentColor.value
+  if (!ringNodes.length) buildRing()
+  seedRingAtTarget()
+  ringLoop()
+}
+
+function stopRing() {
+  if (ringAnimId != null) {
+    cancelAnimationFrame(ringAnimId)
+    ringAnimId = null
+  }
+  if (dotsCtx) dotsCtx.clearRect(0, 0, dotsW, dotsH)
+  prevDirty = null
+}
+
+const CLICKABLE_SELECTOR = [
+  'button',
+  'a',
+  '[role="button"]',
+  '.clickable',
+  '.action-btn',
+  '.repo-link',
+  '.repo-button',
+  '.link-button',
+  '.copy-btn',
+  '.nav-btn',
+  '.github-btn',
+  '.tool-row',
+].join(',')
+
+function isTextInputLike(el) {
+  if (!el) return false
+  if (el.matches?.('input, textarea, select, option, [contenteditable="true"]')) return true
+  return !!el.closest?.('input, textarea, select, [contenteditable="true"]')
+}
+
+/**
+ * A nested browsing context consumes every pointer event once the cursor is
+ * inside it, and the comments are one (giscus renders into a cross-origin
+ * iframe). This page would therefore keep hiding the native cursor while its own
+ * heart sat frozen at the frame's edge — a pointer the reader can neither see nor
+ * move. Hand these regions back to the platform cursor instead.
+ */
+function isForeignSurface(el) {
+  return !!el?.closest?.('iframe, embed, object')
+}
+
+let rafId = null
+let _lastTarget = null
+let pendingX = -9999
+let pendingY = -9999
+let eventsBound = false
+
+function updateHoverState(target) {
+  const root = document.documentElement
+  // 全局显示：除文本输入区和内嵌浏览上下文外，任意位置都显示爱心 + 点环
+  if (!target || isTextInputLike(target) || isForeignSurface(target)) {
+    visible.value = false
+    root.classList.remove('heart-bounce-active')
+    return
+  }
+  visible.value = true
+  root.classList.add('heart-bounce-active')
+}
+
+function trackTarget(target) {
+  if (target === _lastTarget) return
+  _lastTarget = target
+  updateHoverState(target)
+}
+
+function onMouseMove(e) {
+  pendingX = e.clientX
+  pendingY = e.clientY
+
+  // 点环头点目标 = 爱心中心（图标 24×24，锚点在 x-12,y-20 → 中心约 x, y-8）
+  ringTarget.x = pendingX
+  ringTarget.y = pendingY - 8
+
+  if (rafId) return
+  rafId = requestAnimationFrame(() => {
+    rafId = null
+    const el = cursorRef.value
+    if (el) {
+      el.style.transform = `translate3d(${pendingX - 12}px, ${pendingY - 20}px, 0)`
+    }
+  })
+
+  // Check hover state only when the target element actually changes
+  trackTarget(e.target)
+}
+
+/**
+ * `mousemove` alone cannot see the frame boundary: a pointer that crosses it in
+ * one step is already inside the frame when the next move fires, so that event
+ * never reaches this document. `mouseover` is generated by the crossing itself
+ * and still lands on the frame element here, which is what makes it the reliable
+ * signal for both entering and leaving.
+ */
+function onMouseOver(e) {
+  trackTarget(e.target)
+}
+
+function onMouseLeave() {
+  _lastTarget = null
+  visible.value = false
+  document.documentElement.classList.remove('heart-bounce-active')
+}
+
+function onWindowBlur() {
+  onMouseLeave()
+}
+
+function onPointerEffectsReset() {
+  onMouseLeave()
+}
+
+function bindEvents() {
+  if (eventsBound || !pointerEffectsEnabled.value) return
+  window.addEventListener('mousemove', onMouseMove, { passive: true })
+  window.addEventListener('mouseover', onMouseOver, { passive: true })
+  window.addEventListener('mouseleave', onMouseLeave, { passive: true })
+  window.addEventListener('blur', onWindowBlur, { passive: true })
+  window.addEventListener(POINTER_EFFECTS_RESET_EVENT, onPointerEffectsReset, { passive: true })
+  eventsBound = true
+}
+
+function unbindEvents() {
+  if (!eventsBound) return
+  window.removeEventListener('mousemove', onMouseMove)
+  window.removeEventListener('mouseover', onMouseOver)
+  window.removeEventListener('mouseleave', onMouseLeave)
+  window.removeEventListener('blur', onWindowBlur)
+  window.removeEventListener(POINTER_EFFECTS_RESET_EVENT, onPointerEffectsReset)
+  eventsBound = false
+}
+
+function syncPointerEffects() {
+  if (!pointerEffectsEnabled.value) {
+    visible.value = false
+    _lastTarget = null
+    document.documentElement.classList.remove('heart-bounce-active')
+    unbindEvents()
+    stopRing()
+    return
+  }
+  bindEvents()
+}
+
+watch(pointerEffectsEnabled, syncPointerEffects, { immediate: true })
+
+// 点环随「爱心可见 + 动态背景开启」启停
+watch(ringVisible, (v) => {
+  if (v) startRing()
+  else stopRing()
+})
+
+// 配色或明暗切换时，点环颜色同步刷新
+watch(accentColor, (color) => {
+  ringColor = color
+})
+
+let ringResizeTimer = null
+function onRingResize() {
+  clearTimeout(ringResizeTimer)
+  ringResizeTimer = setTimeout(() => {
+    if (ringAnimId != null) resizeDots()
+  }, 120)
+}
+
+onMounted(() => {
+  syncPointerEffects()
+  window.addEventListener('resize', onRingResize, { passive: true })
+})
+
+onBeforeUnmount(() => {
+  unbindEvents()
+  document.documentElement.classList.remove('heart-bounce-active')
+  if (rafId) cancelAnimationFrame(rafId)
+  stopRing()
+  window.removeEventListener('resize', onRingResize)
+  clearTimeout(ringResizeTimer)
+})
+</script>
+
+<style scoped>
+.heart-bounce-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  transform: translate3d(-9999px, -9999px, 0);
+  pointer-events: none;
+  z-index: 2147483647 !important;
+  will-change: transform;
+  contain: layout style paint;
+}
+
+.heart-dots-canvas {
+  position: fixed;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  z-index: 2147483646; /* 紧贴爱心之下 */
+  will-change: transform;
+}
+
+.heart-bounce-cursor__icon {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* 爱心本体走 mask + background-color，颜色直接由 --site-accent 驱动：
+     配色切换只改 CSS 变量，不用重新编码 data URL，也不需要 JS 参与。
+     mask 里用白色填充（alpha 与亮度都为 1），alpha / luminance 两种
+     mask-mode 解释下都能正确显形。 */
+  background-color: var(--site-accent);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z' fill='%23ffffff'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z' fill='%23ffffff'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  animation: heartBounce 560ms ease-in-out infinite;
+  will-change: transform;
+}
+
+.heart-bounce-cursor .ripple {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 10px;
+  height: 4px;
+  transform: translate(-50%, -6px) scale(0);
+  border-radius: 50%;
+  background: rgb(var(--site-accent-rgb) / 0.95);
+  opacity: 0;
+  filter: blur(0.6px);
+  pointer-events: none;
+  animation: heartRipple 560ms ease-out infinite;
+  transform-origin: center;
+}
+
+@keyframes heartRipple {
+  0%, 78% { opacity: 0; transform: translate(-50%, -6px) scale(0); }
+  86% { opacity: 0.65; transform: translate(-50%, -2px) scale(0.6); }
+  100% { opacity: 0; transform: translate(-50%, 0px) scale(2.2); }
+}
+
+@keyframes heartBounce {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  35% { transform: translate3d(0, -4px, 0) scale(1.08); }
+  60% { transform: translate3d(0, 2px, 0) scale(0.96); }
+}
+
+/* 全局隐藏原生光标，只保留爱心 + 点环（文本输入区除外，见下方恢复规则）*/
+:global(html.heart-bounce-active),
+:global(html.heart-bounce-active *) {
+  cursor: none !important;
+}
+
+:global(iframe.giscus-frame) {
+  cursor: auto !important;
+}
+
+/* 文本输入区恢复原生光标，方便编辑；内嵌框架（如 giscus 评论）同理 —— 框架内部
+   的光标由它自己的文档绘制，本页只能确保不把它藏起来 */
+:global(html.heart-bounce-active input),
+:global(html.heart-bounce-active textarea),
+:global(html.heart-bounce-active select),
+:global(html.heart-bounce-active iframe),
+:global(html.heart-bounce-active embed),
+:global(html.heart-bounce-active object),
+:global(html.heart-bounce-active [contenteditable="true"]) {
+  cursor: auto !important;
+}
+</style>

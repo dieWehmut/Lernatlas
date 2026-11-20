@@ -1,0 +1,266 @@
+<template>
+  <div class="mobile-layout" :class="{ 'has-open-drawer': drawerOpen || tocDrawerOpen }">
+    <MobileHeader @toggle-menu="openDrawer" @toggle-toc="openTocDrawer" />
+
+    <Transition name="drawer-overlay">
+      <button
+        v-if="drawerOpen || tocDrawerOpen"
+        class="mobile-layout__overlay"
+        type="button"
+        aria-label="Close menu"
+        @click="closeDrawers"
+      />
+    </Transition>
+
+    <aside class="mobile-layout__drawer" :class="{ 'is-open': drawerOpen }" aria-label="Mobile navigation">
+      <SiteSidebar @navigate="closeDrawer" />
+    </aside>
+
+    <aside class="mobile-layout__toc-drawer" :class="{ 'is-open': tocDrawerOpen }" aria-label="Page timeline">
+      <ScrollSpySidebar
+        :key="`${routeViewKey(route)}:${tocKey}`"
+        class="mobile-layout__toc"
+        root-selector=".mobile-layout__main"
+        :heading-selector="tocHeadingSelector"
+        :offset="72"
+        mode="mobile"
+        @navigate="closeTocDrawer"
+      />
+    </aside>
+
+    <main class="mobile-layout__main">
+      <RouterView v-slot="{ Component, route }">
+        <Transition name="page-fade" mode="out-in">
+          <component :is="Component" :key="routeViewKey(route)" />
+        </Transition>
+      </RouterView>
+    </main>
+
+    <GiscusComments layout="mobile" />
+    <Footer />
+  </div>
+</template>
+
+<script setup>
+import { computed, onBeforeUnmount, watch, ref } from 'vue'
+import { RouterView, useRoute } from 'vue-router'
+import MobileHeader from '../components/navigation/MobileHeader.vue'
+import SiteSidebar from '../components/navigation/SiteSidebar.vue'
+import Footer from '../components/system/Footer.vue'
+import GiscusComments from '../components/system/GiscusComments.vue'
+import ScrollSpySidebar from '../components/system/ScrollSpySidebar.vue'
+
+const route = useRoute()
+const drawerOpen = ref(false)
+const tocDrawerOpen = ref(false)
+const tocKey = ref(0)
+const tocHeadingSelector = computed(() => {
+  if (route.name === 'capture') return '.capture-time-heading'
+  if (['root', 'home', 'archive', 'notes', 'tag-detail'].includes(String(route.name || ''))) {
+    return '.content-time-heading'
+  }
+  // The drawer is the outline for whatever page is open, and an article nests
+  // its sections four and five deep; listing only the top three left the deep
+  // halves of pages like /post/yjango off the drawer entirely.
+  return 'h1, h2, h3, h4, h5, h6'
+})
+let previousBodyOverflow = ''
+
+function routeViewKey(routeValue) {
+  return String(routeValue.fullPath || '').split('#')[0]
+}
+
+function lockBody() {
+  if (typeof document === 'undefined') return
+  previousBodyOverflow = document.body.style.overflow
+  document.body.style.overflow = 'hidden'
+}
+
+function unlockBody() {
+  if (typeof document === 'undefined') return
+  document.body.style.overflow = previousBodyOverflow
+}
+
+function openDrawer() {
+  tocDrawerOpen.value = false
+  drawerOpen.value = true
+}
+
+function closeDrawer() {
+  drawerOpen.value = false
+}
+
+function openTocDrawer() {
+  drawerOpen.value = false
+  tocKey.value += 1
+  tocDrawerOpen.value = true
+}
+
+function closeTocDrawer() {
+  tocDrawerOpen.value = false
+}
+
+function closeDrawers() {
+  closeDrawer()
+  closeTocDrawer()
+}
+
+function onKeydown(event) {
+  if (event.key === 'Escape') closeDrawers()
+}
+
+watch([drawerOpen, tocDrawerOpen], ([navOpen, tocOpen]) => {
+  const open = navOpen || tocOpen
+  if (open) {
+    lockBody()
+    window.addEventListener('keydown', onKeydown)
+  } else {
+    unlockBody()
+    window.removeEventListener('keydown', onKeydown)
+  }
+})
+
+watch(() => route.fullPath, closeDrawers)
+
+onBeforeUnmount(() => {
+  unlockBody()
+  window.removeEventListener('keydown', onKeydown)
+})
+</script>
+
+<style scoped>
+.mobile-layout {
+  position: relative;
+  z-index: 2;
+  display: none;
+  min-height: 100vh;
+  isolation: isolate;
+  background:
+    var(--site-mesh-line-row),
+    var(--site-mesh-line-column),
+    radial-gradient(circle at 78% 4%, color-mix(in srgb, var(--site-accent) 8%, transparent), transparent 34%),
+    transparent;
+  background-size: var(--site-mesh-background-size);
+}
+
+:root.dynamic-background-enabled .mobile-layout {
+  background:
+    var(--site-mesh-line-row),
+    var(--site-mesh-line-column),
+    transparent;
+  background-size: var(--site-mesh-background-size);
+}
+
+.mobile-layout.has-open-drawer {
+  z-index: 90;
+}
+
+.mobile-layout__main {
+  position: relative;
+  z-index: 1;
+  min-height: calc(100vh - var(--site-mobile-header-height));
+  padding: 24px 18px 42px;
+}
+
+.mobile-layout__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  border: 0;
+  background: rgba(0, 0, 0, 0.58);
+}
+
+.mobile-layout__drawer {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 100;
+  transform: translateX(-100%);
+  transition: transform 260ms cubic-bezier(.2, .9, .2, 1);
+  will-change: transform;
+}
+
+.mobile-layout__drawer.is-open {
+  transform: translateX(0);
+}
+
+.mobile-layout__toc-drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  z-index: 100;
+  width: clamp(124px, 36vw, 148px);
+  min-height: 100%;
+  padding: 0;
+  color: var(--site-text);
+  background: var(--site-sidebar-bg);
+  border-left: 1px solid var(--site-border);
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  transform: translateX(100%);
+  transition: transform 260ms cubic-bezier(.2, .9, .2, 1);
+  will-change: transform;
+}
+
+.mobile-layout__toc-drawer::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-layout__toc-drawer.is-open {
+  transform: translateX(0);
+}
+
+.mobile-layout__toc {
+  min-height: 100%;
+  padding: 0 10px 22px;
+}
+
+.drawer-overlay-enter-active,
+.drawer-overlay-leave-active {
+  transition: opacity 180ms ease;
+}
+
+.drawer-overlay-enter-from,
+.drawer-overlay-leave-to {
+  opacity: 0;
+}
+
+/* 快速淡出 + 平滑淡入，enter 用 ease-out 减速落位，leave 只淡出不位移，避免上滑跳动 */
+.page-fade-enter-active {
+  transition: opacity 150ms ease-out, transform 150ms ease-out;
+  will-change: opacity, transform;
+}
+
+.page-fade-leave-active {
+  transition: opacity 60ms ease-in;
+  will-change: opacity;
+}
+
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+.page-fade-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: 900px) {
+  .mobile-layout {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-layout__drawer,
+  .mobile-layout__toc-drawer,
+  .drawer-overlay-enter-active,
+  .drawer-overlay-leave-active,
+  .page-fade-enter-active,
+  .page-fade-leave-active {
+    transition-duration: 1ms;
+  }
+  .page-fade-enter-from {
+    transform: none;
+  }
+}
+</style>

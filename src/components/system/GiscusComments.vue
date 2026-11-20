@@ -1,0 +1,395 @@
+<template>
+  <section
+    v-if="shouldRender && (hasConfig || showConfigHint)"
+    class="giscus-comments"
+    :class="{ 'giscus-comments--inline': layout === 'inline' }"
+    aria-label="Comments"
+  >
+    <p v-if="!hasConfig" class="giscus-comments__empty">
+      {{ configHint }}
+    </p>
+
+    <div v-else ref="containerRef" :key="renderKey" class="giscus-comments__container"></div>
+  </section>
+</template>
+
+<script setup>
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { initGiscusAuthBridge, watchGiscusAuth } from '../../utils/giscusAuth'
+
+const props = defineProps({
+  layout: {
+    type: String,
+    default: 'desktop',
+  },
+  term: {
+    type: String,
+    default: '',
+  },
+  source: {
+    type: String,
+    default: 'site',
+  },
+  explicit: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+const route = useRoute()
+const containerRef = ref(null)
+const renderKey = ref(0)
+const isActiveLayout = ref(false)
+const currentTheme = ref('dark')
+const currentColorScheme = ref('purple')
+const excludedRouteNames = new Set(['search', 'capture-detail', 'not-found'])
+const showConfigHint = import.meta.env.DEV
+
+let mediaQuery = null
+let themeObserver = null
+let renderedRoute = ''
+let unwatchGiscusAuth = null
+
+const siteConfig = {
+  repo: import.meta.env.VITE_GISCUS_REPO || '',
+  repoId: import.meta.env.VITE_GISCUS_REPO_ID || '',
+  category: import.meta.env.VITE_GISCUS_CATEGORY || '',
+  categoryId: import.meta.env.VITE_GISCUS_CATEGORY_ID || '',
+  mapping: import.meta.env.VITE_GISCUS_MAPPING || 'pathname',
+  strict: import.meta.env.VITE_GISCUS_STRICT || '0',
+  reactionsEnabled: import.meta.env.VITE_GISCUS_REACTIONS_ENABLED || '1',
+  inputPosition: import.meta.env.VITE_GISCUS_INPUT_POSITION || 'bottom',
+  theme: import.meta.env.VITE_GISCUS_THEME || 'nexus',
+  lang: import.meta.env.VITE_GISCUS_LANG || 'zh-CN',
+}
+
+const captureConfig = {
+  repo: import.meta.env.VITE_CAPTURE_GISCUS_REPO || siteConfig.repo,
+  repoId: import.meta.env.VITE_CAPTURE_GISCUS_REPO_ID || siteConfig.repoId,
+  category: import.meta.env.VITE_CAPTURE_GISCUS_CATEGORY || siteConfig.category,
+  categoryId: import.meta.env.VITE_CAPTURE_GISCUS_CATEGORY_ID || siteConfig.categoryId,
+  mapping: import.meta.env.VITE_CAPTURE_GISCUS_MAPPING || 'specific',
+  strict: import.meta.env.VITE_CAPTURE_GISCUS_STRICT || siteConfig.strict,
+  reactionsEnabled: import.meta.env.VITE_CAPTURE_GISCUS_REACTIONS_ENABLED || siteConfig.reactionsEnabled,
+  inputPosition: import.meta.env.VITE_CAPTURE_GISCUS_INPUT_POSITION || siteConfig.inputPosition,
+  theme: import.meta.env.VITE_CAPTURE_GISCUS_THEME || siteConfig.theme,
+  lang: import.meta.env.VITE_CAPTURE_GISCUS_LANG || siteConfig.lang,
+}
+
+const activeConfig = computed(() => props.source === 'capture' ? captureConfig : siteConfig)
+
+const hasConfig = computed(() =>
+  Boolean(activeConfig.value.repo && activeConfig.value.repoId && activeConfig.value.category && activeConfig.value.categoryId)
+)
+
+const configHint = computed(() =>
+  props.source === 'capture'
+    ? 'Configure VITE_CAPTURE_GISCUS_* or VITE_GISCUS_* to enable GitHub comments.'
+    : 'Configure VITE_GISCUS_* to enable GitHub comments.'
+)
+
+const shouldRender = computed(() =>
+  isActiveLayout.value
+    && (props.explicit || props.layout === 'inline' || !excludedRouteNames.has(String(route.name || '')))
+)
+
+const routeTerm = computed(() => {
+  const explicitTerm = props.term.trim()
+  if (explicitTerm) return explicitTerm
+
+  const name = route.name === 'root' ? 'home' : String(route.name || 'route')
+  const path = route.path === '/' ? 'home' : route.path.replace(/^\/+/, '').replace(/\/+$/g, '')
+  return `route:${name}:${path || 'home'}`
+})
+
+function updateActiveLayout() {
+  if (!mediaQuery) return
+  if (props.layout === 'inline') {
+    isActiveLayout.value = true
+    return
+  }
+  isActiveLayout.value = props.layout === 'mobile' ? mediaQuery.matches : !mediaQuery.matches
+}
+
+function clearContainer() {
+  const container = containerRef.value
+  if (container) container.innerHTML = ''
+}
+
+function readSiteTheme() {
+  if (typeof document === 'undefined') return 'dark'
+  return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'
+}
+
+function readSiteColorScheme() {
+  if (typeof document === 'undefined') return 'purple'
+  return document.documentElement.getAttribute('data-color-scheme') === 'green' ? 'green' : 'purple'
+}
+
+function updateCurrentAppearance() {
+  currentTheme.value = readSiteTheme()
+  currentColorScheme.value = readSiteColorScheme()
+}
+
+function resolveTheme(theme) {
+  if (theme === 'nexus') {
+    const themeBase = currentColorScheme.value === 'green' ? 'giscus-nexus-green' : 'giscus-nexus'
+    const themeFile = currentTheme.value === 'light' ? `${themeBase}-light.css` : `${themeBase}.css`
+    return new URL(`${import.meta.env.BASE_URL}${themeFile}`, window.location.origin).toString()
+  }
+
+  return theme
+}
+
+function syncGiscusTheme() {
+  const iframe = containerRef.value?.querySelector('iframe.giscus-frame')
+  if (!iframe?.contentWindow) return
+  const config = activeConfig.value
+
+  iframe.contentWindow.postMessage(
+    {
+      giscus: {
+        setConfig: {
+          theme: resolveTheme(config.theme),
+        },
+      },
+    },
+    'https://giscus.app'
+  )
+}
+
+async function renderGiscus() {
+  if (!shouldRender.value || !hasConfig.value) {
+    clearContainer()
+    renderedRoute = ''
+    return
+  }
+
+  await nextTick()
+
+  const container = containerRef.value
+  const renderId = `${props.source}:${route.fullPath}:${routeTerm.value}`
+  if (!container || renderedRoute === renderId) return
+
+  container.innerHTML = ''
+  renderedRoute = renderId
+  const config = activeConfig.value
+
+  const script = document.createElement('script')
+  script.src = 'https://giscus.app/client.js'
+  script.async = true
+  script.crossOrigin = 'anonymous'
+  script.setAttribute('data-repo', config.repo)
+  script.setAttribute('data-repo-id', config.repoId)
+  script.setAttribute('data-category', config.category)
+  script.setAttribute('data-category-id', config.categoryId)
+  script.setAttribute('data-mapping', config.mapping)
+  script.setAttribute('data-strict', config.strict)
+  script.setAttribute('data-reactions-enabled', config.reactionsEnabled)
+  script.setAttribute('data-emit-metadata', '1')
+  script.setAttribute('data-input-position', config.inputPosition)
+  script.setAttribute('data-theme', resolveTheme(config.theme))
+  script.setAttribute('data-lang', config.lang)
+  script.setAttribute('data-loading', 'lazy')
+
+  if (config.mapping === 'specific') {
+    script.setAttribute('data-term', routeTerm.value)
+  }
+
+  container.appendChild(script)
+}
+
+function resetAndRender() {
+  renderKey.value += 1
+  renderedRoute = ''
+  scheduleRender()
+}
+
+// 换页时重挂 giscus 会拆 iframe + 注入第三方 script，和 page-fade 抢同一帧。
+// 推迟到空闲时段再做，过渡动画就不会被这段同步 DOM 工作卡住。
+let renderHandle = null
+let renderHandleKind = null
+
+function cancelScheduledRender() {
+  if (renderHandle == null) return
+  if (renderHandleKind === 'idle') window.cancelIdleCallback(renderHandle)
+  else window.clearTimeout(renderHandle)
+  renderHandle = null
+  renderHandleKind = null
+}
+
+function scheduleRender() {
+  cancelScheduledRender()
+  const run = () => {
+    renderHandle = null
+    renderHandleKind = null
+    renderGiscus()
+  }
+
+  if (typeof window.requestIdleCallback === 'function') {
+    renderHandleKind = 'idle'
+    renderHandle = window.requestIdleCallback(run, { timeout: 600 })
+  } else {
+    renderHandleKind = 'timeout'
+    renderHandle = window.setTimeout(run, 240)
+  }
+}
+
+onMounted(() => {
+  initGiscusAuthBridge()
+  mediaQuery = window.matchMedia('(max-width: 900px)')
+  updateCurrentAppearance()
+  themeObserver = new MutationObserver(updateCurrentAppearance)
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme', 'data-color-scheme'],
+  })
+  updateActiveLayout()
+
+  if (mediaQuery.addEventListener) {
+    mediaQuery.addEventListener('change', updateActiveLayout)
+  } else {
+    mediaQuery.addListener(updateActiveLayout)
+  }
+
+  unwatchGiscusAuth = watchGiscusAuth((_state, reason) => {
+    if (reason === 'session' || reason === 'signout' || reason === 'error') {
+      resetAndRender()
+    }
+  })
+
+  scheduleRender()
+})
+
+onBeforeUnmount(() => {
+  cancelScheduledRender()
+  unwatchGiscusAuth?.()
+  themeObserver?.disconnect()
+
+  if (!mediaQuery) return
+
+  if (mediaQuery.removeEventListener) {
+    mediaQuery.removeEventListener('change', updateActiveLayout)
+  } else {
+    mediaQuery.removeListener(updateActiveLayout)
+  }
+})
+
+watch(() => route.fullPath, resetAndRender)
+watch(() => props.term, resetAndRender)
+watch(() => props.source, resetAndRender)
+watch(shouldRender, resetAndRender)
+watch([currentTheme, currentColorScheme], () => {
+  if (activeConfig.value.theme === 'nexus') syncGiscusTheme()
+})
+</script>
+
+<style scoped>
+.giscus-comments {
+  width: min(
+    var(--site-content-width),
+    calc(100vw - var(--site-sidebar-width) - var(--site-desktop-content-gutter) - var(--site-desktop-content-end-gutter))
+  );
+  margin: 0 auto 0 var(--site-desktop-content-gutter);
+  padding: 0 0 24px;
+  color: var(--site-text);
+  /* Same formula as the main column, so it has to ride the same timing — without
+     this the comment block snaps to its new width while the column above glides. */
+  transition: width var(--sidebar-swap-duration, 340ms) var(--sidebar-swap-ease, ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .giscus-comments {
+    transition: none;
+  }
+}
+
+.giscus-comments__header {
+  margin-bottom: 14px;
+  padding-top: 18px;
+  border-top: 1px solid var(--site-border);
+}
+
+.giscus-comments__header > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 0;
+}
+
+.giscus-comments__header span,
+.giscus-comments__header small {
+  display: block;
+}
+
+.giscus-comments__header span {
+  color: var(--site-text);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.giscus-comments__header small,
+.giscus-comments__empty {
+  color: var(--site-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.giscus-comments__header small {
+  overflow: hidden;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.giscus-comments__empty {
+  margin: 0;
+  padding: 14px 0 4px;
+}
+
+.giscus-comments__container {
+  min-width: 0;
+}
+
+.giscus-comments--inline {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.giscus-comments__container :deep(.giscus),
+.giscus-comments__container :deep(.giscus-frame) {
+  width: 100%;
+}
+
+@media (min-width: 901px) and (max-width: 1100px) {
+  .giscus-comments {
+    width: calc(100vw - var(--site-sidebar-width) - var(--site-desktop-content-gutter) - 22px);
+  }
+}
+
+@media (max-width: 900px) {
+  .giscus-comments {
+    width: auto;
+    margin: 0 18px;
+    padding-bottom: 18px;
+  }
+
+  .giscus-comments__header span {
+    font-size: 24px;
+  }
+
+  .giscus-comments__header > div {
+    display: block;
+  }
+
+  .giscus-comments__header small {
+    margin-top: 5px;
+    text-align: left;
+  }
+}
+</style>

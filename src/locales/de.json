@@ -1,0 +1,242 @@
+{
+  "backToTop": "Nach oben",
+  "settings": "Einstellungen",
+  "language": "Sprache",
+  "search": {
+    "hint": "Suche ..."
+  },
+  "sidebar": {
+    "lastUpdated": "Zuletzt commit: ",
+    "followers": "{count} Follower"
+  },
+  "nav": {
+    "home": "Startseite",
+    "archive": "Archiv",
+    "notes": "Notizen",
+    "infra": "Infrastruktur",
+    "project": "Projekte",
+    "tags": "Tags",
+    "about": "Über",
+    "friends": "Freunde",
+    "search": "Suche",
+    "pages": "Websites",
+    "services": "Dienste",
+    "games": "Spiele",
+    "apps": "Apps",
+    "files": "Dateien",
+    "tools": "Werkzeuge",
+    "capture": "Capture"
+  },
+  "common": {
+    "totalFormat": "Insgesamt {count} Elemente",
+    "totalFiles": "Insgesamt {count} Dateien",
+    "versionsCount": "{count} Versionen",
+    "matchedFormat": "Gefunden {count} Elemente",
+    "auto_loaded": "Automatisch von GitHub geladen",
+    "loading": "Wird geladen",
+    "no_files": "Keine Dateien gefunden",
+    "no_match": "Keine übereinstimmenden Inhalte"
+  },
+  "action": {
+    "open": "Öffnen",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "first_result_copied": "Link des ersten Ergebnisses kopiert",
+    "no_result": "Keine Ergebnisse gefunden",
+    "copy_failed": "Kopieren fehlgeschlagen",
+    "download": "Herunterladen",
+    "repo": "Repo",
+    "view": "Anzeigen",
+    "expand": "Erweitern",
+    "collapse": "Einklappen"
+  },
+  "footer": {
+    "uptime": "Betriebszeit"
+  },
+  "header": {
+    "latestCommit": "Letzter Commit"
+  },
+  "languages": {
+    "zh": "中文",
+    "zh_tw": "繁體",
+    "en": "English",
+    "ja": "日本語",
+    "de": "Deutsch",
+    "la": "Latein"
+  },
+  "intro": {
+    "title": "Willkommen!",
+    "subtitle": "{owner}s Nexus"
+  },
+  "project": {
+    "categories": {
+      "websites": "Websites",
+      "games": "Spiele",
+      "apps": "Apps",
+      "agents": "Agenten",
+      "tools": "Werkzeuge",
+      "templates": "Vorlagen"
+    }
+  },
+  "float": {
+    "viewMode": "Ansicht wechseln",
+    "toggleSidebar": "Spaltenansicht umschalten"
+  },
+  "error": {
+    "unable_load": "Daten konnten nicht geladen werden"
+  },
+  "status": {
+    "checking": "Prüfe...",
+    "online": "Online",
+    "offline": "Offline",
+    "unreachable": "Nicht erreichbar",
+    "highLatency": "Hohe Latenz",
+    "timeout": "Zeitüberschreitung"
+  },
+  "infra": {
+    "summary": {
+      "endpoints": "{count} Dienst-Endpunkte",
+      "online": "{count} online",
+      "offline": "{count} offline"
+    }
+  },
+  "capture": {
+    "title": "Capture",
+    "empty": "Keine Capture-Bilder gefunden.",
+    "editor": "Editor",
+    "localDev": "Lokale Entwicklung aktiv",
+    "editorDisabled": "Deaktiviert",
+    "editorUnavailable": "Editor nicht verfügbar",
+    "uploadImage": "Bild hochladen",
+    "deleteImage": "Bild löschen",
+    "confirmDelete": "{title} löschen?",
+    "deleteDialogTitle": "Bild löschen",
+    "cancelDelete": "Abbrechen",
+    "confirmDeleteAction": "Löschen",
+    "loadMore": "Mehr laden",
+    "uploadFailed": "Upload fehlgeschlagen.",
+    "deleteFailed": "Löschen fehlgeschlagen."
+  },
+  "console": {
+    "shell": {
+      "label": "Nexus-Konsole",
+      "recentLabel": "Letzte Befehle",
+      "recent": "zuletzt",
+      "commandLabel": "Konsolenbefehl",
+      "suggestionsLabel": "Befehlsvorschläge",
+      "insert": "-- EINFÜGEN --",
+      "run": "Befehl ausführen"
+    },
+    "overview": {
+      "iconCycle": "Symbolform: {form}. Auslösen, um weiterzuschalten.",
+      "iconForm": "Symbolform: {form}"
+    },
+    "suggestion": {
+      "tagEntries": "{count} Einträge"
+    },
+    "panel": {
+      "fallback": "Konsole",
+      "back": "Zurück zum vorherigen Menü",
+      "empty": "Keine Optionen verfügbar.",
+      "heading": {
+        "theme": "Thema wählen",
+        "color": "Farbschema wählen",
+        "background": "Bewegter Hintergrund",
+        "icon": "Symbolform wählen",
+        "language": "Sprache wählen",
+        "mode": "Anzeigemodus wählen",
+        "notePicker": "Notiz wählen",
+        "postPicker": "Beitrag wählen"
+      },
+      "list": {
+        "fallback": "Konsolenoptionen",
+        "theme": "Themaoptionen",
+        "color": "Farbschemaoptionen",
+        "background": "Hintergrundoptionen",
+        "icon": "Symbolformoptionen",
+        "language": "Sprachoptionen",
+        "mode": "Anzeigemodusoptionen",
+        "notePicker": "Notizen",
+        "postPicker": "Beiträge"
+      }
+    },
+    "option": {
+      "theme": {
+        "night": "Gedämpfte Terminalfarben",
+        "light": "Helle Farben mit hohem Kontrast"
+      },
+      "background": {
+        "on": "Animierten Seitenhintergrund aktiv lassen",
+        "off": "Animierten Seitenhintergrund abschalten"
+      },
+      "mode": {
+        "console": "Arbeitsbereich der Nexus-Konsole",
+        "classic": "Standardlayout mit Seitenleiste"
+      },
+      "icon": {
+        "pink": "Symbol in Rosa zeigen",
+        "silver": "Symbol in Silber zeigen",
+        "green": "Symbol in Grün zeigen",
+        "blue": "Symbol in Blau zeigen",
+        "purple": "Symbol in Violett zeigen",
+        "yellow": "Symbol in Gelb zeigen",
+        "orange": "Symbol in Orange zeigen",
+        "rose": "Symbol in Rosarot zeigen",
+        "cyan": "Symbol in Türkis zeigen",
+        "midnight": "Symbol in Mitternachtsgrau zeigen",
+        "grayscale": "Symbol auf Graustufen reduzieren",
+        "whiten": "Symbol zur Silhouette verflachen"
+      },
+      "color": {
+        "green": "Grün",
+        "purple": "Violett",
+        "pink": "Rosa",
+        "white": "Weiß",
+        "black": "Schwarz"
+      }
+    },
+    "feedback": {
+      "theme": "Thema auf {value} gesetzt.",
+      "color": "Farbschema auf {value} gesetzt.",
+      "background": "Bewegter Hintergrund auf {value} gesetzt.",
+      "icon": "Symbolform auf {value} gesetzt.",
+      "language": "Sprache auf {value} gesetzt.",
+      "modeConsole": "Nexus-Konsole aktiviert.",
+      "modeClassic": "Standardlayout aktiviert.",
+      "exported": "Artikel als PDF exportiert.",
+      "exportFailed": "Artikel konnte nicht exportiert werden.",
+      "navigationFailed": "Navigation konnte nicht abgeschlossen werden."
+    },
+    "group": {
+      "navigate": "Herumnavigieren",
+      "page": "Auf die gelesene Seite einwirken",
+      "appearance": "Aussehen der Website ändern",
+      "console": "Die Konsole selbst"
+    },
+    "command": {
+      "home": "Die Startseiten-Chronik durchsehen",
+      "posts": "Das Beitragsarchiv durchsehen",
+      "notes": "Das Notizverzeichnis durchsehen",
+      "comment": "Zum Kommentarfeld dieser Seite springen",
+      "export": "Diesen Artikel als PDF exportieren",
+      "post": "Einen Beitrag wählen",
+      "note": "Eine Notiz wählen",
+      "capture": "Capture-Bilder durchsehen",
+      "infra": "Dienststatus prüfen",
+      "project": "Projekte durchsehen",
+      "tags": "Tags durchsehen",
+      "about": "Website-Informationen lesen",
+      "friends": "Freundeslinks durchsehen",
+      "search": "Beim Tippen suchen, z. B. /search vue",
+      "theme": "Helles oder dunkles Thema wählen",
+      "color": "Ein Farbschema wählen",
+      "background": "Den bewegten Hintergrund einstellen",
+      "icon": "Wählen, wie das Konsolensymbol gezeichnet wird",
+      "language": "Sprache der Oberfläche wählen",
+      "mode": "Konsole oder Standardlayout wählen",
+      "mode_classic": "Zum Standardlayout zurückkehren",
+      "mode_console": "Die Nexus-Konsole verwenden",
+      "help": "Die Befehlsübersicht lesen"
+    }
+  }
+}

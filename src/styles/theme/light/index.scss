@@ -1,0 +1,19 @@
+/* Light theme – pure white (higher specificity to override default) */
+:root[data-theme="light"] {
+  --site-bg: #ffffff;
+  --site-sidebar-bg: rgba(255, 255, 255, 0.96);
+  --site-text: #000000;
+  --site-muted: #444;
+  --site-border: rgba(0, 0, 0, 0.1);
+  --site-accent: #8f35ff;
+  --site-accent-rgb: 143 53 255;
+  --site-tag-color: rgba(88, 62, 126, 0.92);
+}
+
+:root[data-theme="light"] #app {
+  background: var(--site-bg);
+}
+
+:root[data-theme="light"] body {
+  background: var(--site-bg);
+}

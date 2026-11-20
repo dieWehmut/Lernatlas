@@ -1,0 +1,22 @@
+/* Dark theme – pure black (default) */
+:root,
+[data-theme="dark"] {
+  --site-bg: #000000;
+  --site-sidebar-bg: rgba(10, 10, 10, 0.96);
+  --site-text: #e0e0e0;
+  --site-muted: #999;
+  --site-border: rgba(255, 255, 255, 0.1);
+  --site-accent: #9b3dff;
+  --site-accent-rgb: 155 61 255;
+  --site-tag-color: rgba(214, 194, 255, 0.9);
+}
+
+:root #app,
+[data-theme="dark"] #app {
+  background: var(--site-bg);
+}
+
+:root body,
+[data-theme="dark"] body {
+  background: var(--site-bg);
+}

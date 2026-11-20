@@ -1,0 +1,239 @@
+{
+  "backToTop": "回到顶部",
+  "settings": "设置",
+  "language": "语言",
+  "search": {
+    "hint": "搜索 ..."
+  },
+  "sidebar": {
+    "lastUpdated": "最近 commit：",
+    "followers": "{count} 个关注者"
+  },
+  "nav": {
+    "home": "首页",
+    "archive": "归档",
+    "notes": "笔记",
+    "infra": "基础设施",
+    "project": "项目",
+    "tags": "标签",
+    "about": "关于",
+    "friends": "友链",
+    "search": "搜索",
+    "pages": "网站",
+    "services": "服务",
+    "games": "游戏",
+    "apps": "应用",
+    "tools": "工具",
+    "capture": "图集"
+  },
+  "common": {
+    "totalFormat": "共 {count} 项",
+    "versionsCount": "{count} 个版本",
+    "matchedFormat": "匹配 {count} 项",
+    "auto_loaded": "从 GitHub 自动加载",
+    "loading": "加载中",
+    "no_match": "没有匹配的内容"
+  },
+  "action": {
+    "open": "打开",
+    "copy": "复制",
+    "copied": "已复制",
+    "first_result_copied": "已复制第一个结果的链接",
+    "no_result": "未找到匹配结果",
+    "copy_failed": "复制失败",
+    "download": "下载",
+    "repo": "仓库",
+    "view": "浏览",
+    "expand": "展开",
+    "collapse": "收起"
+  },
+  "footer": {
+    "uptime": "运行时间"
+  },
+  "header": {
+    "latestCommit": "最近 commit"
+  },
+  "languages": {
+    "zh": "中文",
+    "zh_tw": "繁體",
+    "en": "英语",
+    "ja": "日本語",
+    "de": "Deutsch",
+    "la": "拉丁語"
+  },
+  "intro": {
+    "title": "欢迎！",
+    "subtitle": "{owner} 的 Nexus"
+  },
+  "project": {
+    "categories": {
+      "websites": "网站",
+      "games": "游戏",
+      "apps": "应用",
+      "agents": "智能体",
+      "tools": "工具",
+      "templates": "模板"
+    }
+  },
+  "float": {
+    "viewMode": "切换视图",
+    "toggleSidebar": "切换单双栏"
+  },
+  "error": {
+    "unable_load": "无法加载数据"
+  },
+  "status": {
+    "checking": "检测中...",
+    "online": "在线",
+    "offline": "离线",
+    "unreachable": "不可达",
+    "highLatency": "高延迟",
+    "timeout": "超时"
+  },
+  "infra": {
+    "summary": {
+      "endpoints": "{count} 个服务端点",
+      "online": "{count} 在线",
+      "offline": "{count} 离线"
+    }
+  },
+  "capture": {
+    "title": "图集",
+    "empty": "暂无图集资源。",
+    "editor": "编辑",
+    "localDev": "本地开发可编辑",
+    "editorDisabled": "已禁用",
+    "editorUnavailable": "编辑不可用",
+    "uploadImage": "上传图片",
+    "deleteImage": "删除图片",
+    "confirmDelete": "删除 {title}？",
+    "deleteDialogTitle": "删除图片",
+    "cancelDelete": "取消",
+    "confirmDeleteAction": "删除",
+    "loadMore": "加载更多",
+    "uploadFailed": "上传失败。",
+    "deleteFailed": "删除失败。"
+  },
+  "console": {
+    "shell": {
+      "label": "Nexus 控制台",
+      "recentLabel": "最近命令",
+      "recent": "最近",
+      "commandLabel": "控制台命令",
+      "suggestionsLabel": "命令建议",
+      "insert": "-- 插入 --",
+      "run": "执行命令"
+    },
+    "overview": {
+      "iconCycle": "图标形态：{form}。点击可切换下一种。",
+      "iconForm": "图标形态：{form}"
+    },
+    "suggestion": {
+      "tagEntries": "{count} 项"
+    },
+    "panel": {
+      "fallback": "控制台",
+      "back": "返回上一级",
+      "empty": "没有可选项。",
+      "heading": {
+        "theme": "选择主题",
+        "color": "选择配色",
+        "background": "动态背景",
+        "icon": "选择图标形态",
+        "language": "选择语言",
+        "mode": "选择显示模式",
+        "notePicker": "选择一篇笔记",
+        "postPicker": "选择一篇文章"
+      },
+      "list": {
+        "fallback": "控制台选项",
+        "theme": "主题选项",
+        "color": "配色选项",
+        "background": "背景选项",
+        "icon": "图标形态选项",
+        "language": "语言选项",
+        "mode": "显示模式选项",
+        "notePicker": "笔记",
+        "postPicker": "文章"
+      }
+    },
+    "option": {
+      "theme": {
+        "night": "暗光终端配色",
+        "light": "高对比亮色配色"
+      },
+      "background": {
+        "on": "保持站点背景动效开启",
+        "off": "关闭站点背景动效"
+      },
+      "mode": {
+        "console": "Nexus 控制台桌面工作区",
+        "classic": "标准侧栏布局"
+      },
+      "icon": {
+        "pink": "把图标换成粉色",
+        "silver": "把图标换成银白",
+        "green": "把图标换成绿色",
+        "blue": "把图标换成蓝色",
+        "purple": "把图标换成紫色",
+        "yellow": "把图标换成黄色",
+        "orange": "把图标换成橙色",
+        "rose": "把图标换成玫红",
+        "cyan": "把图标换成青色",
+        "midnight": "把图标换成墨黑",
+        "grayscale": "把图标褪成灰度",
+        "whiten": "把图标压成剪影"
+      },
+      "color": {
+        "green": "绿",
+        "purple": "紫",
+        "pink": "粉",
+        "white": "白",
+        "black": "黑"
+      }
+    },
+    "feedback": {
+      "theme": "主题已设为 {value}。",
+      "color": "配色已设为 {value}。",
+      "background": "动态背景已设为 {value}。",
+      "icon": "图标形态已设为 {value}。",
+      "language": "语言已设为 {value}。",
+      "modeConsole": "已启用 Nexus 控制台。",
+      "modeClassic": "已启用标准布局。",
+      "exported": "文章已导出为 PDF。",
+      "exportFailed": "文章导出失败。",
+      "navigationFailed": "跳转未能完成。"
+    },
+    "group": {
+      "navigate": "四处走走",
+      "page": "对当前页面动手",
+      "appearance": "改变站点外观",
+      "console": "控制台自身"
+    },
+    "command": {
+      "home": "浏览首页时间线",
+      "posts": "浏览文章归档",
+      "notes": "浏览笔记索引",
+      "comment": "跳到本页评论框",
+      "export": "把本文导出为 PDF",
+      "post": "选择一篇文章",
+      "note": "选择一篇笔记",
+      "capture": "浏览图集资源",
+      "infra": "查看服务状态",
+      "project": "浏览项目",
+      "tags": "浏览标签",
+      "about": "阅读站点信息",
+      "friends": "浏览友链",
+      "search": "边打边搜，例如 /search vue",
+      "theme": "选择亮色或暗色主题",
+      "color": "选择一套配色",
+      "background": "配置动态背景",
+      "icon": "选择控制台图标的画法",
+      "language": "选择界面语言",
+      "mode": "选择控制台或标准布局",
+      "mode_classic": "回到标准布局",
+      "mode_console": "使用 Nexus 控制台",
+      "help": "阅读命令手册"
+    }
+  }
+}

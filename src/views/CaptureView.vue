@@ -1,0 +1,1832 @@
+<template>
+  <section class="capture-view page-surface" :class="{ 'capture-view--detail': isDetailRoute }">
+    <input
+      v-if="canEdit"
+      ref="uploadInput"
+      class="capture-editor__file"
+      type="file"
+      accept="image/*"
+      @change="onUploadFileChange"
+    />
+    <div class="capture-view__main">
+      <template v-if="isConsole">
+        <div v-if="canEdit" class="console-capture-editor" :aria-busy="editorBusy">
+          <span><strong>{{ t('capture.editor') }}</strong> {{ editorStatusText }}</span>
+          <button
+            class="console-button"
+            type="button"
+            :disabled="editorBusy"
+            :aria-label="t('capture.uploadImage')"
+            :title="t('capture.uploadImage')"
+            @click="selectEmptyUploadGroup"
+          >+ upload</button>
+        </div>
+        <template v-if="selectedGroup">
+          <div class="console-capture-detail">
+            <header class="console-capture-detail__header">
+              <button class="console-button console-button--icon" type="button" aria-label="Back to captures" title="Back to captures" @click="backToCapture">&lt;</button>
+              <span>{{ selectedGroup.assets.length }} assets</span>
+            </header>
+            <div class="console-capture-detail__assets">
+              <div
+                v-for="asset in selectedGroup.assets"
+                :key="asset.id"
+                class="console-capture-asset"
+              >
+                <button
+                  type="button"
+                  :aria-label="`Open ${asset.title || asset.id}`"
+                  :title="asset.title || asset.id"
+                  @click="openAsset(asset)"
+                >
+                  <img
+                    :src="asset.image"
+                    :alt="asset.title || asset.id"
+                    loading="lazy"
+                    decoding="async"
+                    @error="retryPublicAssetImage($event, asset.image)"
+                  />
+                </button>
+                <button
+                  v-if="canEdit"
+                  class="console-capture-action"
+                  type="button"
+                  :disabled="editorBusy"
+                  :aria-label="`${t('capture.deleteImage')}: ${asset.title || asset.id}`"
+                  :title="t('capture.deleteImage')"
+                  @click="deleteCapture(asset)"
+                >-</button>
+              </div>
+            </div>
+            <div class="console-capture-detail__meta">
+              <time v-if="selectedGroup.date" :datetime="selectedGroup.date">{{ formatDateOnly(selectedGroup.date) }}</time>
+              <div v-if="selectedGroup.tags.length" class="console-capture-detail__tags">
+                <RouterLink
+                  v-for="tag in selectedGroup.tags"
+                  :key="tag"
+                  :to="`/tags/${encodeURIComponent(tag)}`"
+                >#{{ tag }}</RouterLink>
+              </div>
+              <div v-if="selectedGroup.sources.length" class="console-capture-detail__sources">
+                <RouterLink
+                  v-for="source in selectedGroup.sources"
+                  :key="`${source.type}:${source.id}`"
+                  :to="source.url"
+                >{{ source.title }}</RouterLink>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <template v-else-if="isDetailRoute">
+          <div class="console-capture-empty">
+            <code>capture not found</code>
+            <button class="console-button" type="button" @click="backToCapture">/&nbsp;capture</button>
+          </div>
+        </template>
+
+        <ConsoleMonthNavigator v-else :months="consoleMonths" state-key="capture">
+          <template #default="{ item }">
+            <article class="console-capture-group">
+              <div class="console-capture-group__media">
+                <div
+                  v-for="(asset, index) in previewAssets(asCaptureGroup(item))"
+                  :key="asset.id"
+                  class="console-capture-asset"
+                >
+                  <button
+                    type="button"
+                    :aria-label="`Open ${asset.title || asset.id}`"
+                    :title="asset.title || asset.id"
+                    @click="openAsset(asset)"
+                  >
+                    <img
+                      :src="asset.image"
+                      :alt="asset.title || asset.id"
+                      loading="lazy"
+                      decoding="async"
+                      @error="retryPublicAssetImage($event, asset.image)"
+                    />
+                  </button>
+                  <!-- A truncated group reports itself on its last tile, the way
+                       classic does, rather than spending a tile of its own on the
+                       count: three to a row only stays three to a row if the count
+                       is not competing for a cell. It stays a link here because the
+                       console grid, unlike classic's, is not itself clickable. -->
+                  <RouterLink
+                    v-if="index === capturePreviewLimit - 1 && hiddenAssetCount(asCaptureGroup(item)) > 0"
+                    class="console-capture-group__overflow"
+                    :to="`/capture/${encodeURIComponent(asCaptureGroup(item).id)}`"
+                    :aria-label="`Open ${hiddenAssetCount(asCaptureGroup(item))} more captures`"
+                    @click="saveCaptureScrollPosition"
+                  >+{{ hiddenAssetCount(asCaptureGroup(item)) }}</RouterLink>
+                  <button
+                    v-if="canEdit"
+                    class="console-capture-action"
+                    type="button"
+                    :disabled="editorBusy"
+                    :aria-label="`${t('capture.deleteImage')}: ${asset.title || asset.id}`"
+                    :title="t('capture.deleteImage')"
+                    @click="deleteCapture(asset)"
+                  >-</button>
+                </div>
+              </div>
+              <div class="console-capture-group__body">
+                <RouterLink
+                  class="console-capture-group__title"
+                  :to="`/capture/${encodeURIComponent(asCaptureGroup(item).id)}`"
+                  @click="saveCaptureScrollPosition"
+                >
+                  <!-- The route id was never meant to be read. The group's own
+                       heading is the same information in the wording the rest of
+                       the site uses, and the machine-readable date rides along on
+                       the element rather than in a second row repeating it. -->
+                  <time v-if="asCaptureGroup(item).date" :datetime="asCaptureGroup(item).date">{{ asCaptureGroup(item).heading }}</time>
+                  <span v-else>{{ asCaptureGroup(item).heading }}</span>
+                </RouterLink>
+                <div v-if="asCaptureGroup(item).tags.length" class="console-capture-group__tags">
+                  <RouterLink
+                    v-for="tag in asCaptureGroup(item).tags"
+                    :key="tag"
+                    :to="`/tags/${encodeURIComponent(tag)}`"
+                  >#{{ tag }}</RouterLink>
+                </div>
+                <div v-if="asCaptureGroup(item).sources.length" class="console-capture-group__sources">
+                  <RouterLink
+                    v-for="source in asCaptureGroup(item).sources"
+                    :key="`${source.type}:${source.id}`"
+                    :to="source.url"
+                  >{{ source.title }}</RouterLink>
+                </div>
+              </div>
+            </article>
+          </template>
+        </ConsoleMonthNavigator>
+      </template>
+
+      <template v-else>
+      <template v-if="selectedGroup">
+        <div class="capture-detail__topbar">
+          <button
+            class="capture-detail__back"
+            type="button"
+            aria-label="Back"
+            title="Back"
+            @click="backToCapture"
+          >
+            <el-icon><ArrowLeft /></el-icon>
+          </button>
+        </div>
+
+        <article class="capture-detail">
+          <div
+            class="capture-detail__grid"
+            :class="{
+              'capture-detail__grid--single': selectedGroup.assets.length === 1,
+              'capture-detail__grid--double': selectedGroup.assets.length === 2,
+            }"
+          >
+            <figure
+              v-for="asset in selectedGroup.assets"
+              :key="asset.id"
+              class="capture-detail__figure"
+            >
+              <button
+                class="capture-detail__media"
+                type="button"
+                @click="openAsset(asset)"
+              >
+                <img
+                  :src="asset.image"
+                  :alt="asset.title || ''"
+                  loading="eager"
+                  decoding="async"
+                  @error="retryPublicAssetImage($event, asset.image)"
+                />
+              </button>
+            </figure>
+          </div>
+
+          <div class="capture-detail__body">
+            <div class="capture-detail__meta-row">
+              <time v-if="selectedGroup.date" :datetime="selectedGroup.date">
+                <el-icon class="capture-card__meta-icon"><Calendar /></el-icon>
+                {{ formatDateOnly(selectedGroup.date) }}
+              </time>
+              <RouterLink
+                v-for="tag in selectedGroup.tags"
+                :key="tag"
+                class="capture-card__tag"
+                :to="`/tags/${encodeURIComponent(tag)}`"
+              >
+                <el-icon class="capture-card__tag-icon"><PriceTag /></el-icon>
+                {{ tag }}
+              </RouterLink>
+            </div>
+
+            <div v-if="selectedGroup.sources.length" class="capture-group__sources">
+              <RouterLink
+                v-for="source in selectedGroup.sources"
+                :key="`${source.type}:${source.id}`"
+                class="capture-group__source"
+                :to="source.url"
+              >
+                {{ source.title }}
+              </RouterLink>
+            </div>
+
+            <GiscusComments layout="inline" source="capture" :term="selectedCommentTerm" />
+          </div>
+        </article>
+      </template>
+
+      <template v-else-if="isDetailRoute">
+        <div class="capture-detail__topbar">
+          <button
+            class="capture-detail__back"
+            type="button"
+            aria-label="Back"
+            title="Back"
+            @click="backToCapture"
+          >
+            <el-icon><ArrowLeft /></el-icon>
+          </button>
+        </div>
+        <div class="capture-empty">
+          <span>{{ t('capture.empty') }}</span>
+        </div>
+      </template>
+
+      <template v-else>
+        <div v-if="canEdit" class="capture-editor">
+          <div class="capture-editor__status">
+            <span>{{ t('capture.editor') }}</span>
+            <strong>{{ editorStatusText }}</strong>
+          </div>
+        </div>
+
+        <div v-if="yearGroups.length" class="capture-timeline">
+          <section v-for="year in yearGroups" :key="year.id" class="capture-year">
+            <h2 :id="year.id" class="capture-time-heading capture-time-heading--year">
+              {{ year.label }}
+            </h2>
+
+            <section v-for="month in year.months" :key="month.id" class="capture-month">
+              <h3 :id="month.id" class="capture-time-heading capture-time-heading--month">
+                {{ month.label }}
+              </h3>
+
+              <div class="capture-groups">
+                <article
+                  v-for="group in month.groups"
+                  :key="group.id"
+                  class="capture-group card-overflow-host"
+                  :class="{ 'has-overflow-badge': captureGroupOverflowCount(group) > 0 }"
+                >
+                  <div
+                    class="capture-grid"
+                    :class="{
+                      'capture-grid--single': group.assets.length === 1,
+                      'capture-grid--double': group.assets.length === 2,
+                    }"
+                    role="link"
+                    tabindex="0"
+                    :aria-label="`Open ${group.heading}`"
+                    @click="openCaptureGroup(group)"
+                    @keydown.enter.prevent="openCaptureGroup(group)"
+                    @keydown.space.prevent="openCaptureGroup(group)"
+                  >
+                    <div
+                      v-for="(asset, index) in previewAssets(group)"
+                      :key="asset.id"
+                      class="capture-card"
+                    >
+                      <div
+                        class="capture-card__media"
+                      >
+                        <img
+                          :src="asset.image"
+                          :alt="asset.title || ''"
+                          loading="lazy"
+                          decoding="async"
+                          @error="retryPublicAssetImage($event, asset.image)"
+                        />
+                        <span
+                          v-if="index === capturePreviewLimit - 1 && hiddenAssetCount(group) > 0"
+                          class="card-overflow-badge"
+                          aria-hidden="true"
+                        >
+                          +{{ hiddenAssetCount(group) }}
+                        </span>
+                      </div>
+                      <button
+                        v-if="canEdit"
+                        class="capture-card__delete"
+                        type="button"
+                        :aria-label="t('capture.deleteImage')"
+                        :title="t('capture.deleteImage')"
+                        :disabled="editorBusy"
+                        @click.stop="deleteCapture(asset)"
+                        @keydown.stop
+                      >
+                        <el-icon><Delete /></el-icon>
+                      </button>
+                    </div>
+                    <button
+                      v-if="canEdit && group.assets.length < capturePreviewLimit"
+                      class="capture-card capture-card--add"
+                      type="button"
+                      :aria-label="t('capture.uploadImage')"
+                      :title="t('capture.uploadImage')"
+                      :disabled="editorBusy"
+                      @click.stop="selectUploadGroup(group)"
+                      @keydown.stop
+                    >
+                      <el-icon><Plus /></el-icon>
+                    </button>
+                  </div>
+
+                  <div class="capture-group__body">
+                    <div class="capture-card__meta-row">
+                      <time v-if="group.date" :datetime="group.date">
+                        <el-icon class="capture-card__meta-icon"><Calendar /></el-icon>
+                        {{ formatDateOnly(group.date) }}
+                      </time>
+                      <RouterLink
+                        v-for="tag in group.tags"
+                        :key="tag"
+                        class="capture-card__tag"
+                        :to="`/tags/${encodeURIComponent(tag)}`"
+                      >
+                        <el-icon class="capture-card__tag-icon"><PriceTag /></el-icon>
+                        {{ tag }}
+                      </RouterLink>
+                      <RouterLink
+                        class="capture-card__comments"
+                        :to="`/capture/${encodeURIComponent(group.id)}`"
+                        aria-label="Comments"
+                        title="Comments"
+                        @click="saveCaptureScrollPosition"
+                      >
+                        <el-icon><ChatRound /></el-icon>
+                      </RouterLink>
+                    </div>
+
+                    <div v-if="group.sources.length" class="capture-group__sources">
+                      <RouterLink
+                        v-for="source in group.sources"
+                        :key="`${source.type}:${source.id}`"
+                        class="capture-group__source"
+                        :to="source.url"
+                      >
+                        {{ source.title }}
+                      </RouterLink>
+                    </div>
+                  </div>
+                  <span
+                    v-if="captureGroupOverflowCount(group) > 0"
+                    class="card-overflow-badge"
+                    aria-hidden="true"
+                  >
+                    +{{ captureGroupOverflowCount(group) }}
+                  </span>
+                </article>
+              </div>
+            </section>
+          </section>
+        </div>
+
+        <div v-else class="capture-empty">
+          <span>{{ t('capture.empty') }}</span>
+          <button
+            v-if="canEdit"
+            class="capture-empty__upload"
+            type="button"
+            :aria-label="t('capture.uploadImage')"
+            :title="t('capture.uploadImage')"
+            :disabled="editorBusy"
+            @click="selectEmptyUploadGroup"
+          >
+            <el-icon><Plus /></el-icon>
+          </button>
+        </div>
+      </template>
+      </template>
+    </div>
+
+    <ScrollSpySidebar
+      v-if="!isConsole && !isDetailRoute"
+      :key="scrollSpyKey"
+      root-selector=".capture-view__main"
+      heading-selector=".capture-time-heading"
+    />
+
+    <Teleport to="body">
+      <Transition name="capture-delete-dialog">
+        <div
+          v-if="deleteTarget"
+          class="capture-delete-dialog"
+          :class="{ 'capture-delete-dialog--console': isConsole }"
+          role="dialog"
+          aria-modal="true"
+          :aria-label="t('capture.deleteDialogTitle')"
+          tabindex="-1"
+          @click.self="cancelDeleteCapture"
+          @keydown.esc.prevent="cancelDeleteCapture"
+        >
+          <div class="capture-delete-dialog__panel">
+            <h2>{{ t('capture.deleteDialogTitle') }}</h2>
+            <p>{{ t('capture.confirmDelete', { title: deleteTargetLabel }) }}</p>
+            <div class="capture-delete-dialog__actions">
+              <button
+                class="capture-delete-dialog__button capture-delete-dialog__button--ghost"
+                type="button"
+                :disabled="editorBusy"
+                @click="cancelDeleteCapture"
+              >
+                {{ t('capture.cancelDelete') }}
+              </button>
+              <button
+                class="capture-delete-dialog__button capture-delete-dialog__button--danger"
+                type="button"
+                :disabled="editorBusy"
+                @click="confirmDeleteCapture"
+              >
+                {{ t('capture.confirmDeleteAction') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+  </section>
+</template>
+
+<script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { ArrowLeft, Calendar, ChatRound, Delete, Plus, PriceTag } from '@element-plus/icons-vue'
+import GiscusComments from '../components/system/GiscusComments.vue'
+import ScrollSpySidebar from '../components/system/ScrollSpySidebar.vue'
+import ConsoleMonthNavigator, { type ConsoleMonthGroup } from '../components/console/ConsoleMonthNavigator.vue'
+import { getCaptureAssets, getCaptureGroupId, normalizeCaptureAssets } from '../data/capture'
+import type { CaptureAsset, CaptureSourceRef } from '../types/content'
+import { CARD_GROUP_LIMIT, hiddenCardCount, limitCardGroup, overflowCountForItem } from '../utils/cardGroups'
+import { formatTimelineDate, parseTimelineDate } from '../utils/date'
+import { openImagePreviewGallery } from '../utils/imagePreview'
+import { retryPublicAssetImage } from '../utils/publicAssets'
+import { formatTimelineMonthLabel, formatTimelineYearLabel } from '../utils/timelineGroups'
+import { useDisplayModePreference } from '../composables/useDisplayModePreference'
+
+const isDev = import.meta.env.DEV
+const captureScrollStorageKey = 'nexus:capture-scroll-y'
+const capturePreviewLimit = CARD_GROUP_LIMIT
+
+const allAssets = ref<CaptureAsset[]>(getCaptureAssets())
+const captureGroups = computed(() => groupCaptureAssets(allAssets.value))
+const visibleCaptureGroups = computed(() => limitCardGroup(captureGroups.value))
+const captureGroupHiddenCount = computed(() => hiddenCardCount(captureGroups.value))
+const yearGroups = computed(() => groupByYearAndMonth(visibleCaptureGroups.value))
+const consoleYearGroups = computed(() => groupByYearAndMonth(captureGroups.value))
+const route = useRoute()
+const router = useRouter()
+const { isConsole } = useDisplayModePreference()
+const selectedGroupId = computed(() => String(route.params.id || ''))
+const isDetailRoute = computed(() => selectedGroupId.value.length > 0)
+const selectedGroup = computed(() =>
+  selectedGroupId.value ? findCaptureGroupByRouteId(selectedGroupId.value) : null
+)
+const selectedCommentTerm = computed(() => selectedGroup.value ? `capture-group:${selectedGroup.value.id}` : '')
+const scrollSpyKey = computed(() =>
+  yearGroups.value
+    .map((year) => `${year.id}:${year.months.map((month) => `${month.id}:${month.groups.length}`).join(',')}`)
+    .join('|')
+)
+const consoleMonths = computed<ConsoleMonthGroup[]>(() =>
+  consoleYearGroups.value.flatMap((year) =>
+    year.months.map((month) => ({
+      id: month.id,
+      label: month.label,
+      yearLabel: year.label,
+      timestamp: month.timestamp,
+      items: month.groups,
+    })),
+  ),
+)
+const { locale, t } = useI18n()
+const editorAuth = ref<CaptureEditorAuth | null>(null)
+const editorBusy = ref(false)
+const uploadInput = ref<HTMLInputElement | null>(null)
+const pendingUploadGroup = ref<CaptureGroup | null>(null)
+const deleteTarget = ref<CaptureAsset | null>(null)
+const canEdit = computed(() => isDev && editorAuth.value?.authorized === true)
+const deleteTargetLabel = computed(() => deleteTarget.value?.title || deleteTarget.value?.id || '')
+const editorStatusText = computed(() => {
+  if (!isDev) return t('capture.editorDisabled')
+  if (!editorAuth.value) return t('status.checking')
+  if (editorAuth.value.authorized) return editorAuth.value.login || t('capture.localDev')
+  return t('capture.editorUnavailable')
+})
+
+let captureAssetRefreshTimer: number | undefined
+let captureAssetRefreshInFlight = false
+
+type CaptureEditorAuth = {
+  enabled: boolean
+  authenticated: boolean
+  authorized: boolean
+  login: string
+  owner: string
+  localDev?: boolean
+}
+
+type CaptureAssetsResponse = {
+  ok: boolean
+  assets?: CaptureAsset[]
+  error?: string
+}
+
+type CaptureGroup = {
+  id: string
+  date?: string
+  heading: string
+  timestamp: number
+  tags: string[]
+  sources: CaptureSourceRef[]
+  assets: CaptureAsset[]
+}
+
+type MonthGroup = {
+  id: string
+  label: string
+  timestamp: number
+  groups: CaptureGroup[]
+}
+
+type YearGroup = {
+  id: string
+  label: string
+  timestamp: number
+  months: MonthGroup[]
+}
+
+function asCaptureGroup(item: unknown): CaptureGroup {
+  return item as CaptureGroup
+}
+
+function formatDate(date?: string) {
+  return formatTimelineDate(date)
+}
+
+function formatDateOnly(date?: string) {
+  const { start, end } = parseTimelineDate(date)
+  if (start && end) return `${formatDateOnlyValue(start)} - ${formatDateOnlyValue(end)}`
+  if (start) return formatDateOnlyValue(start)
+  return date?.replace(/[ T]\d{2}:\d{2}(?::\d{2})?(?:\s*(?:Z|[+-]\d{2}:?\d{2}))?$/, '') || ''
+}
+
+function formatDateOnlyValue(date: Date) {
+  return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`
+}
+
+function groupCaptureAssets(assets: CaptureAsset[]): CaptureGroup[] {
+  const groups = new Map<string, CaptureGroup>()
+
+  for (const asset of assets) {
+    const key = asset.date || 'undated'
+    const group = groups.get(key) || {
+      id: getCaptureGroupId(key),
+      date: asset.date,
+      heading: formatDate(asset.date) || 'Undated',
+      timestamp: getStartSortTimestamp(asset.date),
+      tags: [],
+      sources: [],
+      assets: [],
+    }
+
+    group.tags = mergeUnique(group.tags, asset.tags || [])
+    group.sources = mergeSources(group.sources, asset.sourceRefs || [])
+    group.assets.push(asset)
+    groups.set(key, group)
+  }
+
+  return Array.from(groups.values()).sort((a, b) => b.timestamp - a.timestamp)
+}
+
+function findCaptureGroupByRouteId(routeId: string) {
+  return captureGroups.value.find(
+    (group) => group.id === routeId || group.assets.some((asset) => asset.id === routeId)
+  ) || null
+}
+
+function previewAssets(group: CaptureGroup) {
+  return group.assets.slice(0, capturePreviewLimit)
+}
+
+function hiddenAssetCount(group: CaptureGroup) {
+  return Math.max(0, group.assets.length - capturePreviewLimit)
+}
+
+function captureGroupOverflowCount(group: CaptureGroup) {
+  return overflowCountForItem(group, visibleCaptureGroups.value, captureGroupHiddenCount.value)
+}
+
+function groupByYearAndMonth(groups: CaptureGroup[]): YearGroup[] {
+  const years = new Map<string, YearGroup>()
+
+  for (const group of groups) {
+    const start = getStartDate(group.date)
+    const yearKey = start ? String(start.getFullYear()) : 'undated'
+    const monthKey = start ? `${yearKey}-${String(start.getMonth() + 1).padStart(2, '0')}` : 'undated'
+    const year = years.get(yearKey) || {
+      id: `capture-year-${yearKey}`,
+      label: start ? formatYearLabel(start) : 'Undated',
+      timestamp: start?.getTime() || 0,
+      months: [],
+    }
+
+    let month = year.months.find((item) => item.id === `capture-month-${monthKey}`)
+    if (!month) {
+      month = {
+        id: `capture-month-${monthKey}`,
+        label: start ? formatMonthLabel(start) : 'Undated',
+        timestamp: start?.getTime() || 0,
+        groups: [],
+      }
+      year.months.push(month)
+    }
+
+    year.timestamp = Math.max(year.timestamp, group.timestamp)
+    month.timestamp = Math.max(month.timestamp, group.timestamp)
+    month.groups.push(group)
+    years.set(yearKey, year)
+  }
+
+  return Array.from(years.values())
+    .map((year) => ({
+      ...year,
+      months: year.months
+        .map((month) => ({
+          ...month,
+          groups: month.groups.slice().sort((a, b) => b.timestamp - a.timestamp),
+        }))
+        .sort((a, b) => b.timestamp - a.timestamp),
+    }))
+    .sort((a, b) => b.timestamp - a.timestamp)
+}
+
+function openAsset(asset: CaptureAsset) {
+  openImagePreviewGallery(
+    allAssets.value.map((item) => ({ src: item.image, alt: item.title || '' })),
+    allAssets.value.findIndex((item) => item.id === asset.id)
+  )
+}
+
+function openCaptureGroup(group: CaptureGroup) {
+  saveCaptureScrollPosition()
+  router.push(`/capture/${encodeURIComponent(group.id)}`)
+}
+
+function backToCapture() {
+  if (window.sessionStorage.getItem(captureScrollStorageKey)) {
+    router.back()
+    return
+  }
+  router.push('/capture')
+}
+
+function saveCaptureScrollPosition() {
+  window.sessionStorage.setItem(captureScrollStorageKey, String(window.scrollY))
+}
+
+function restoreCaptureScrollPosition() {
+  if (isDetailRoute.value) return
+  const savedScrollY = window.sessionStorage.getItem(captureScrollStorageKey)
+  if (!savedScrollY) return
+  window.sessionStorage.removeItem(captureScrollStorageKey)
+
+  const top = Number(savedScrollY)
+  if (!Number.isFinite(top)) return
+
+  window.requestAnimationFrame(() => window.scrollTo({ top, behavior: 'auto' }))
+}
+
+async function refreshEditorAuth() {
+  if (!isDev) return
+  try {
+    const response = await fetch('/api/capture/auth')
+    if (!response.ok) throw new Error('Capture editor auth failed.')
+    editorAuth.value = await response.json()
+  } catch {
+    editorAuth.value = {
+      enabled: true,
+      authenticated: false,
+      authorized: true,
+      login: '',
+      owner: '',
+      localDev: true,
+    }
+  }
+}
+
+async function refreshCaptureAssets() {
+  if (!canUseLocalCaptureAssetApi() || captureAssetRefreshInFlight) return
+  captureAssetRefreshInFlight = true
+  try {
+    const response = await fetch(`/api/capture/assets?t=${Date.now()}`, { cache: 'no-store' })
+    if (!response.ok) return
+    const result = await response.json() as CaptureAssetsResponse
+    if (!result.ok || !Array.isArray(result.assets)) return
+    syncCaptureAssets(result.assets)
+  } catch {
+    // The API only exists on local Vite dev/preview servers.
+  } finally {
+    captureAssetRefreshInFlight = false
+  }
+}
+
+function syncCaptureAssets(assets: CaptureAsset[]) {
+  const nextAssets = sortCaptureAssetList(normalizeCaptureAssets(assets))
+  if (JSON.stringify(nextAssets) === JSON.stringify(allAssets.value)) return
+  allAssets.value = nextAssets
+  if (deleteTarget.value && !nextAssets.some((asset) => asset.id === deleteTarget.value?.id)) {
+    deleteTarget.value = null
+  }
+}
+
+function canUseLocalCaptureAssetApi() {
+  if (typeof window === 'undefined') return false
+  if (import.meta.env.DEV) return true
+  return ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)
+}
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || ''))
+    reader.onerror = () => reject(reader.error || new Error('Unable to read file.'))
+    reader.readAsDataURL(file)
+  })
+}
+
+function selectUploadGroup(group: CaptureGroup) {
+  if (!canEdit.value || editorBusy.value) return
+  pendingUploadGroup.value = group
+  if (uploadInput.value) {
+    uploadInput.value.value = ''
+    uploadInput.value.click()
+  }
+}
+
+function selectEmptyUploadGroup() {
+  const today = new Date().toISOString().slice(0, 10)
+  selectUploadGroup({
+    id: getCaptureGroupId(today),
+    date: today,
+    heading: formatDate(today),
+    timestamp: getStartSortTimestamp(today),
+    tags: [],
+    sources: [],
+    assets: [],
+  })
+}
+
+async function onUploadFileChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  const group = pendingUploadGroup.value
+  input.value = ''
+  pendingUploadGroup.value = null
+  if (!file || !group || !canEdit.value) return
+  await uploadCaptureToGroup(file, group)
+}
+
+async function uploadCaptureToGroup(file: File, group: CaptureGroup) {
+  if (!canEdit.value) return
+  editorBusy.value = true
+  try {
+    const imageData = await readFileAsDataUrl(file)
+    const response = await fetch('/api/capture/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        imageData,
+        title: file.name.replace(/\.[^.]+$/, ''),
+        date: group.date || new Date().toISOString().slice(0, 10),
+        tags: group.tags,
+      }),
+    })
+    const result = await response.json()
+    if (!response.ok || !result.ok) throw new Error(result.error || t('capture.uploadFailed'))
+    if (result.asset) upsertCaptureAsset(result.asset)
+  } catch (error) {
+    window.alert(error instanceof Error ? error.message : String(error))
+  } finally {
+    editorBusy.value = false
+  }
+}
+
+function deleteCapture(asset: CaptureAsset) {
+  if (!canEdit.value || editorBusy.value) return
+  deleteTarget.value = asset
+}
+
+function cancelDeleteCapture() {
+  if (editorBusy.value) return
+  deleteTarget.value = null
+}
+
+async function confirmDeleteCapture() {
+  const asset = deleteTarget.value
+  if (!asset || !canEdit.value || editorBusy.value) return
+  editorBusy.value = true
+  try {
+    const response = await fetch('/api/capture/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: asset.id }),
+    })
+    const result = await response.json()
+    if (!response.ok || !result.ok) throw new Error(result.error || t('capture.deleteFailed'))
+    removeCaptureAsset(asset.id)
+    deleteTarget.value = null
+  } catch (error) {
+    window.alert(error instanceof Error ? error.message : String(error))
+  } finally {
+    editorBusy.value = false
+  }
+}
+
+function upsertCaptureAsset(asset: CaptureAsset) {
+  allAssets.value = sortCaptureAssetList([
+    asset,
+    ...allAssets.value.filter((item) => item.id !== asset.id),
+  ])
+}
+
+function removeCaptureAsset(id: string) {
+  allAssets.value = allAssets.value.filter((asset) => asset.id !== id)
+  if (selectedGroupId.value && !selectedGroup.value) {
+    backToCapture()
+  }
+}
+
+function sortCaptureAssetList(assets: CaptureAsset[]) {
+  return assets.slice().sort((a, b) => getStartSortTimestamp(b.date) - getStartSortTimestamp(a.date))
+}
+
+function mergeUnique(existing: string[], incoming: string[]) {
+  return Array.from(new Set([...existing, ...incoming]))
+}
+
+function mergeSources(existing: CaptureSourceRef[], incoming: CaptureSourceRef[]) {
+  const byKey = new Map(existing.map((source) => [`${source.type}:${source.id}`, source]))
+  for (const source of incoming) {
+    byKey.set(`${source.type}:${source.id}`, source)
+  }
+  return Array.from(byKey.values()).sort((a, b) => a.title.localeCompare(b.title))
+}
+
+function getStartDate(date?: string) {
+  const { start } = parseTimelineDate(date)
+  return start
+}
+
+function getStartSortTimestamp(date?: string) {
+  return getStartDate(date)?.getTime() || Date.parse(date || '') || 0
+}
+
+function formatYearLabel(date: Date) {
+  return formatTimelineYearLabel(date, locale.value)
+}
+
+function formatMonthLabel(date: Date) {
+  return formatTimelineMonthLabel(date, locale.value)
+}
+
+onMounted(() => {
+  refreshEditorAuth()
+  refreshCaptureAssets()
+  restoreCaptureScrollPosition()
+  if (canUseLocalCaptureAssetApi()) {
+    captureAssetRefreshTimer = window.setInterval(refreshCaptureAssets, 1500)
+  }
+})
+
+onBeforeUnmount(() => {
+  if (captureAssetRefreshTimer) window.clearInterval(captureAssetRefreshTimer)
+})
+
+watch(isDetailRoute, (detail) => {
+  if (!detail) restoreCaptureScrollPosition()
+}, { flush: 'post' })
+</script>
+
+<style scoped>
+.console-capture-group,
+.console-capture-detail {
+  display: grid;
+  gap: 10px;
+  color: var(--console-text, var(--site-text));
+  font-family: var(--console-font, var(--font-family-base));
+}
+
+.console-capture-group {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  border: 1px solid var(--console-border, var(--site-border));
+  background: var(--console-surface, transparent);
+}
+
+/* Classic's contact sheet, copied: three square crops to a row, butted together,
+   the grid running edge to edge inside the group's own border. CARD_GROUP_LIMIT
+   is 9, so a full group reads as three tidy rows — arithmetic the old wrapping
+   flex of fixed-width stamps could not honour at any container width. */
+.console-capture-group__media {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  min-width: 0;
+}
+
+/* The detail page is where the picture is the point rather than the set, so it
+   copies classic's spaced grid instead of the seamless one. */
+.console-capture-detail__assets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 0;
+}
+
+.console-capture-asset {
+  position: relative;
+  min-width: 0;
+}
+
+/* Squaring the cell is what makes the list a grid rather than a ragged wall.
+   Cropping is the list's job; showing the whole frame is the detail page's. */
+.console-capture-group__media .console-capture-asset {
+  aspect-ratio: 1;
+}
+
+/* Classic's overflow badge is a rounded pill with a drop shadow — the only
+   rounded thing that would appear on a console page. Same corner, same job,
+   drawn square in the console's own tokens. */
+.console-capture-group__overflow {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  z-index: 1;
+  padding: 1px 5px;
+  border: 1px solid var(--console-border, var(--site-border));
+  color: var(--console-accent, var(--site-accent));
+  background: var(--console-bg, var(--site-bg));
+  font-size: 0.72rem;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.console-capture-group__overflow:hover,
+.console-capture-group__overflow:focus-visible {
+  color: var(--console-bg, var(--site-bg));
+  background: var(--console-accent, var(--site-accent));
+  outline: none;
+}
+
+.console-capture-asset > button:first-child {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--console-border, var(--site-border));
+  border-radius: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+/* A thumbnail has no text to recolour, so it answers the cursor by fading. */
+.console-capture-asset > button:first-child:hover,
+.console-capture-asset > button:first-child:focus-visible {
+  opacity: 0.68;
+  outline: none;
+}
+
+.console-capture-action {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 1;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 0;
+  color: #ef6a6a;
+  background: var(--console-bg, var(--site-bg));
+  cursor: pointer;
+  font: inherit;
+  line-height: 14px;
+}
+
+.console-capture-action:hover,
+.console-capture-action:focus-visible {
+  color: var(--console-bg, var(--site-bg));
+  background: #ef6a6a;
+  outline: none;
+}
+
+.console-capture-group__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Classic caps its detail images at 76vh and lets them keep their proportions;
+   matching that is what makes the two modes the same size rather than merely the
+   same column count. */
+.console-capture-detail__assets img {
+  display: block;
+  width: 100%;
+  max-height: 76vh;
+  object-fit: contain;
+}
+
+.console-capture-group__body,
+.console-capture-detail__meta {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* The group no longer carries padding — the contact sheet has to reach its own
+   border — so the text below it insets itself instead. */
+.console-capture-group__body {
+  padding: 8px;
+}
+
+/* Specific enough to outrank the muted colour the generic body-link rule below
+   hands every other anchor in this column. */
+.console-capture-group__body > a.console-capture-group__title {
+  overflow: hidden;
+  color: var(--console-accent, var(--site-accent));
+  font-size: 0.82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.console-capture-group__body > a {
+  width: fit-content;
+  max-width: 100%;
+  text-decoration: none;
+}
+
+.console-capture-group__body > a:hover,
+.console-capture-group__body > a:focus-visible {
+  text-decoration: underline;
+  outline: none;
+}
+
+.console-capture-group__body time,
+.console-capture-detail__meta time,
+.console-capture-group__body a,
+.console-capture-detail__sources a,
+.console-capture-detail__tags a {
+  color: var(--console-muted, var(--site-muted));
+  font-size: 0.78rem;
+}
+
+.console-capture-group__body a:hover,
+.console-capture-group__body a:focus-visible,
+.console-capture-detail__sources a:hover,
+.console-capture-detail__sources a:focus-visible,
+.console-capture-detail__tags a:hover,
+.console-capture-detail__tags a:focus-visible {
+  color: var(--console-accent, var(--site-accent));
+  outline: none;
+}
+
+.console-capture-group__sources,
+.console-capture-detail__sources,
+.console-capture-group__tags,
+.console-capture-detail__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+}
+
+.console-capture-editor {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 36px;
+  margin-bottom: 10px;
+  padding: 5px 8px;
+  border: 1px solid var(--console-border, var(--site-border));
+  color: var(--console-muted, var(--site-muted));
+  font-family: var(--console-font, var(--font-family-base));
+  font-size: 0.76rem;
+}
+
+.console-capture-editor strong {
+  margin-right: 8px;
+  color: var(--console-accent, var(--site-accent));
+}
+
+.console-capture-action:disabled {
+  cursor: progress;
+  opacity: 0.55;
+}
+
+.console-capture-detail__header {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  border-top: 1px solid var(--console-border, var(--site-border));
+  border-bottom: 1px solid var(--console-border, var(--site-border));
+}
+
+.console-capture-detail__header > span {
+  color: var(--console-muted, var(--site-muted));
+  font-size: 0.78rem;
+}
+
+.console-capture-empty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  color: var(--console-muted, var(--site-muted));
+  font-family: var(--console-font, var(--font-family-base));
+}
+
+.console-capture-empty code {
+  color: #ef6a6a;
+  font: inherit;
+}
+
+@media (max-width: 900px) {
+  .console-capture-group,
+  .console-capture-detail,
+  .console-capture-empty,
+  .console-capture-editor {
+    display: none;
+  }
+}
+
+.capture-view {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--site-view-aside-gap);
+}
+
+.capture-view__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.capture-view--detail {
+  display: block;
+}
+
+.capture-detail__topbar {
+  display: flex;
+  margin-bottom: 18px;
+}
+
+.capture-detail__back {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--site-border);
+  border-radius: 8px;
+  color: var(--site-text);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  font-size: 18px;
+  transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
+}
+
+.capture-detail__back:hover,
+.capture-detail__back:focus-visible {
+  color: var(--site-accent);
+  border-color: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.06);
+  outline: none;
+}
+
+.capture-detail {
+  display: grid;
+  gap: 22px;
+}
+
+.capture-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.capture-detail__figure {
+  overflow: hidden;
+  margin: 0;
+  border: 1px solid var(--site-border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.capture-detail__media {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-height: 76vh;
+  padding: 0;
+  border: 0;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: zoom-in;
+}
+
+.capture-detail__media img {
+  display: block;
+  width: 100%;
+  max-height: 76vh;
+  object-fit: contain;
+}
+
+.capture-detail__media img.is-image-failed {
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.capture-detail__media:focus-visible {
+  outline: 2px solid var(--site-accent);
+  outline-offset: -2px;
+}
+
+.capture-detail__meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px 14px;
+  font-size: 14px;
+}
+
+.capture-detail__meta-row time {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--site-muted);
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.capture-detail__body {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--site-border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.capture-editor {
+  display: grid;
+  margin: 0 0 18px;
+  padding: 10px 12px;
+  border: 1px solid var(--site-border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.capture-editor__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--site-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.capture-editor__status strong {
+  color: var(--site-text);
+  font-size: 13px;
+}
+
+.capture-editor__file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+}
+
+.capture-timeline,
+.capture-year,
+.capture-month,
+.capture-groups {
+  display: grid;
+  gap: 24px;
+}
+
+.capture-time-heading {
+  margin: 0;
+  scroll-margin-top: 28px;
+}
+
+.capture-time-heading--year {
+  color: var(--site-text);
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 900;
+}
+
+.capture-time-heading--month {
+  color: var(--site-muted);
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 900;
+}
+
+.capture-group {
+  overflow: hidden;
+  border: 1px solid var(--site-border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.capture-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+}
+
+.capture-grid[role="link"] {
+  cursor: pointer;
+}
+
+.capture-grid[role="link"]:focus-visible {
+  outline: 2px solid var(--site-accent);
+  outline-offset: -2px;
+}
+
+.capture-card {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.capture-card__media {
+  appearance: none;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+}
+
+.capture-card__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 220ms ease;
+}
+
+.capture-card__media img.is-image-failed {
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.06);
+  object-fit: contain;
+}
+
+.capture-grid[role="link"]:hover .capture-card__media img,
+.capture-grid[role="link"]:focus-visible .capture-card__media img {
+  transform: scale(1.03);
+}
+
+.capture-card__delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 6px;
+  color: #fff;
+  background: rgba(150, 20, 36, 0.88);
+  font-size: 15px;
+  cursor: pointer;
+  opacity: 1;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.capture-card__delete:hover,
+.capture-card__delete:focus-visible {
+  background: rgba(190, 18, 60, 0.96);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.capture-card__delete:disabled,
+.capture-card--add:disabled {
+  cursor: progress;
+  opacity: .56;
+}
+
+.capture-card--add {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  border: 0;
+  color: var(--site-muted);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)),
+    rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  font-size: 32px;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.capture-card--add:hover,
+.capture-card--add:focus-visible {
+  color: var(--site-text);
+  background-color: rgb(var(--site-accent-rgb) / 0.08);
+  outline: 2px solid rgb(var(--site-accent-rgb) / 0.46);
+  outline-offset: -2px;
+}
+
+.capture-group__body {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px 14px;
+}
+
+.capture-group.has-overflow-badge .capture-group__body {
+  padding-right: 82px;
+}
+
+.capture-group__sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.capture-group__source {
+  color: var(--site-text);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-decoration: none;
+  transition: color 160ms ease, text-decoration-color 160ms ease;
+}
+
+.capture-group__source:hover,
+.capture-group__source:focus-visible {
+  color: var(--site-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  outline: none;
+}
+
+.capture-card__meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-height: 22px;
+  font-size: 14px;
+  min-width: 0;
+}
+
+.capture-card__meta-row time {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--site-muted);
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.capture-card__meta-icon {
+  width: 14px;
+  height: 14px;
+  font-size: 14px;
+}
+
+.capture-card__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--site-tag-color);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 160ms ease, text-decoration-color 160ms ease;
+}
+
+.capture-card__tag:hover,
+.capture-card__tag:focus-visible {
+  color: var(--site-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  outline: none;
+}
+
+.capture-card__tag-icon {
+  width: 13px;
+  height: 13px;
+  font-size: 13px;
+}
+
+.capture-card__comments {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--site-border);
+  border-radius: 8px;
+  color: var(--site-text);
+  background: rgba(255, 255, 255, 0.03);
+  text-decoration: none;
+  font-size: 15px;
+  margin-left: auto;
+  transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.capture-card__comments:hover,
+.capture-card__comments:focus-visible {
+  color: var(--site-accent);
+  border-color: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.06);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.capture-empty {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 54px 0;
+  color: var(--site-muted);
+  text-align: center;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.capture-empty__upload {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  aspect-ratio: 1;
+  border: 1px dashed var(--site-border);
+  border-radius: 8px;
+  color: var(--site-muted);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  font-size: 30px;
+  transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
+}
+
+.capture-empty__upload:hover,
+.capture-empty__upload:focus-visible {
+  color: var(--site-text);
+  border-color: rgb(var(--site-accent-rgb) / 0.46);
+  background: rgb(var(--site-accent-rgb) / 0.08);
+  outline: none;
+}
+
+.capture-delete-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.54);
+}
+
+.capture-delete-dialog__panel {
+  width: min(360px, 100%);
+  padding: 20px;
+  border: 1px solid var(--site-border);
+  border-radius: 8px;
+  background: var(--site-bg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.34);
+}
+
+.capture-delete-dialog--console .capture-delete-dialog__panel {
+  border-color: var(--console-border-strong, var(--site-accent));
+  border-radius: 0;
+  background: var(--console-bg, var(--site-bg));
+  box-shadow: none;
+  font-family: var(--console-font, var(--font-family-base));
+}
+
+.capture-delete-dialog--console .capture-delete-dialog__button {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+:root[data-theme="light"] .capture-delete-dialog__panel {
+  box-shadow: none;
+}
+
+.capture-delete-dialog__panel h2 {
+  margin: 0 0 8px;
+  color: var(--site-text);
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 900;
+}
+
+.capture-delete-dialog__panel p {
+  margin: 0;
+  color: var(--site-muted);
+  font-size: 14px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.capture-delete-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.capture-delete-dialog__button {
+  min-width: 72px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--site-border);
+  border-radius: 6px;
+  color: var(--site-text);
+  background: rgba(255, 255, 255, 0.04);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.capture-delete-dialog__button--danger {
+  border-color: rgba(190, 18, 60, 0.68);
+  color: #fff;
+  background: rgba(150, 20, 36, 0.9);
+}
+
+.capture-delete-dialog__button:hover,
+.capture-delete-dialog__button:focus-visible {
+  border-color: rgba(255, 255, 255, 0.42);
+  outline: none;
+}
+
+.capture-delete-dialog__button--danger:hover,
+.capture-delete-dialog__button--danger:focus-visible {
+  background: rgba(190, 18, 60, 0.98);
+}
+
+.capture-delete-dialog__button:disabled {
+  cursor: progress;
+  opacity: .58;
+}
+
+.capture-delete-dialog-enter-active,
+.capture-delete-dialog-leave-active {
+  transition: opacity 160ms ease;
+}
+
+.capture-delete-dialog-enter-from,
+.capture-delete-dialog-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: 900px) {
+  .capture-editor {
+    margin-inline: -18px;
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+
+  .capture-timeline,
+  .capture-year,
+  .capture-month {
+    gap: 20px;
+  }
+
+  .capture-groups {
+    margin-inline: -18px;
+    gap: 20px;
+  }
+
+  .capture-group {
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+
+  .capture-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .capture-grid--single {
+    grid-template-columns: minmax(0, 66.666667%);
+    justify-content: start;
+  }
+
+  .capture-grid--double {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .capture-card__meta-row {
+    flex: 1 1 auto;
+    gap: 5px;
+  }
+
+  .capture-card__comments {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+  }
+
+  .capture-detail,
+  .capture-detail__body {
+    margin-inline: -18px;
+  }
+
+  .capture-detail__topbar {
+    display: none;
+  }
+
+  .capture-detail__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+  }
+
+  .capture-detail__grid--single {
+    grid-template-columns: minmax(0, 66.666667%);
+    justify-content: start;
+  }
+
+  .capture-detail__grid--double {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .capture-detail__figure {
+    aspect-ratio: 1;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .capture-detail__media {
+    height: 100%;
+    max-height: none;
+  }
+
+  .capture-detail__media img {
+    height: 100%;
+    max-height: none;
+    object-fit: cover;
+  }
+
+  .capture-detail__body {
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+}
+
+</style>
