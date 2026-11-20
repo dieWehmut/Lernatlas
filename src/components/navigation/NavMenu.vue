@@ -1,9 +1,10 @@
 <template>
-  <nav class="nav-menu" aria-label="Primary navigation">
+  <nav class="nav-menu" aria-label="学科导航">
     <RouterLink
       v-for="item in navItems"
       :key="item.name"
       class="nav-menu__item"
+      :class="{ 'nav-menu__item--active': isActive(item) }"
       :to="item.to"
       @pointerenter="preloadNavItem(item.to)"
       @focus="preloadNavItem(item.to)"
@@ -12,15 +13,14 @@
       <el-icon class="nav-menu__icon">
         <component :is="item.icon" />
       </el-icon>
-      <span>{{ labelFor(item.labelKey, item.fallbackLabel) }}</span>
+      <span>{{ item.label }}</span>
     </RouterLink>
   </nav>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { RouterLink } from 'vue-router'
+import { onMounted } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 import {
   Camera,
   Collection,
@@ -33,31 +33,28 @@ import {
   Search,
   User,
 } from '@element-plus/icons-vue'
-import { siteConfig } from '../../data/site/config'
 import { preloadPrimaryRoutes, preloadRouteByPath } from '../../router'
+import { getTopic } from '../../data/learning'
 
 const emit = defineEmits(['navigate'])
 
-const { t } = useI18n()
+const route = useRoute()
 
-const allNavItems = [
-  { name: 'home', labelKey: 'nav.home', fallbackLabel: 'Home', to: '/home', icon: House },
-  { name: 'archive', labelKey: 'nav.archive', fallbackLabel: 'Archive', to: '/archive', icon: Collection },
-  { name: 'notes', labelKey: 'nav.notes', fallbackLabel: 'Notes', to: '/notes', icon: Notebook },
-  { name: 'infra', labelKey: 'nav.infra', fallbackLabel: 'Infra', to: '/infra', icon: Cpu, enabled: siteConfig.enableInfra },
-  { name: 'capture', labelKey: 'nav.capture', fallbackLabel: 'Capture', to: '/capture', icon: Camera },
-  { name: 'project', labelKey: 'nav.project', fallbackLabel: 'Project', to: '/project', icon: FolderOpened, enabled: siteConfig.enableProject },
-  { name: 'tags', labelKey: 'nav.tags', fallbackLabel: 'Tags', to: '/tags', icon: PriceTag },
-  { name: 'about', labelKey: 'nav.about', fallbackLabel: 'About', to: '/about', icon: User },
-  { name: 'friends', labelKey: 'nav.friends', fallbackLabel: 'Friends', to: '/friends', icon: Connection },
-  { name: 'search', labelKey: 'nav.search', fallbackLabel: 'Search', to: '/search', icon: Search },
+const navItems = [
+  { name: 'home', label: '学科首页', to: '/home', icon: House },
+  { name: 'math', label: '数学资料', to: '/math', icon: Collection },
+  { name: 'junior', label: '初中数学', to: '/math?collection=junior', icon: Notebook, collection: 'junior' },
+  { name: 'senior', label: '高中专题', to: '/math?collection=senior', icon: FolderOpened, collection: 'senior' },
+  { name: 'competition', label: '高中竞赛', to: '/math?collection=competition', icon: PriceTag, collection: 'competition' },
+  { name: 'about', label: '关于本站', to: '/about', icon: User },
 ]
 
-const navItems = computed(() => allNavItems.filter((item) => item.enabled !== false))
-
-function labelFor(key, fallbackLabel) {
-  const value = t(key)
-  return value === key ? fallbackLabel : value
+function isActive(item) {
+  if (item.name === 'home') return route.path === '/' || route.path === '/home'
+  if (item.name === 'about') return route.path === '/about'
+  if (!route.path.startsWith('/math')) return false
+  const collection = String(route.query.collection || getTopic(String(route.params.id || ''))?.collectionId || '')
+  return item.collection ? item.collection === collection : !collection
 }
 
 function preloadNavItem(to) {
@@ -120,7 +117,7 @@ onMounted(preloadPrimaryRoutes)
 
 .nav-menu__item:hover,
 .nav-menu__item:focus-visible,
-.nav-menu__item.router-link-exact-active {
+.nav-menu__item--active {
   color: var(--site-accent);
   background: color-mix(in srgb, var(--site-accent) 10%, transparent);
   text-decoration: none;
@@ -129,7 +126,7 @@ onMounted(preloadPrimaryRoutes)
 
 .nav-menu__item:hover::after,
 .nav-menu__item:focus-visible::after,
-.nav-menu__item.router-link-exact-active::after {
+.nav-menu__item--active::after {
   transform: translateX(430%) skewX(-10deg);
 }
 

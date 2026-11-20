@@ -36,6 +36,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { getNotes, getPosts, siteProfile } from '../../data'
 import { getCaptureAssetById } from '../../data/capture'
+import { getTopic, collections } from '../../data/learning'
 import { requestScrollToSection, useReadingPath } from '../../composables/useReadingPath'
 import ArticleExportButton from '../content/ArticleExportButton.vue'
 
@@ -82,15 +83,17 @@ defineProps({
 })
 
 const staticPages: Record<string, Crumb> = {
-  root: { label: 'Home', to: '/home' },
-  home: { label: 'Home', to: '/home' },
+  root: { label: '学科首页', to: '/home' },
+  home: { label: '学科首页', to: '/home' },
+  'math-home': { label: '数学资料', to: '/math' },
+  'math-catalog': { label: '数学资料', to: '/math' },
   archive: { label: 'Archive', to: '/archive' },
   notes: { label: 'Notes', to: '/notes' },
   capture: { label: 'Capture', to: '/capture' },
   infra: { label: 'Infra', to: '/infra' },
   project: { label: 'Project', to: '/project' },
   tags: { label: 'Tags', to: '/tags' },
-  about: { label: 'About', to: '/about' },
+  about: { label: '关于本站', to: '/about' },
   friends: { label: 'Friends', to: '/friends' },
   search: { label: 'Search', to: '/search' },
   help: { label: 'Help', to: '/help' },
@@ -130,6 +133,19 @@ function detailTitle() {
 const crumbs = computed<Crumb[]>(() => {
   const siteCrumb = { label: siteProfile.title || 'Nexus', to: '/home' }
   const name = String(route.name || '')
+  if (route.path.startsWith('/math/')) {
+    const topic = getTopic(String(route.params.id || ''))
+    const collection = collections.find((item) => item.id === topic?.collectionId)
+    return [
+      { label: '数学资料', to: '/math' },
+      ...(collection ? [{ label: collection.name, to: `/math?collection=${collection.id}` }] : []),
+      { label: topic?.title || '专题' },
+    ]
+  }
+  if (route.path === '/math') {
+    const collection = collections.find((item) => item.id === route.query.collection)
+    return [siteCrumb, { label: collection?.name || '数学资料', to: '/math' }]
+  }
   const section = readingPath.value
   // An article's own title is its first heading, so while the reader is still at
   // the top of the page the section crumb would name the page that the crumb

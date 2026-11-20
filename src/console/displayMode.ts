@@ -1,7 +1,7 @@
 export type DisplayMode = 'console' | 'standard'
 export type ConsoleDisplayMode = DisplayMode
 
-export const DEFAULT_DISPLAY_MODE: DisplayMode = 'console'
+export const DEFAULT_DISPLAY_MODE: DisplayMode = 'standard'
 
 export function isDisplayMode(value: unknown): value is DisplayMode {
   return value === 'console' || value === 'standard'
@@ -19,7 +19,7 @@ export function migrateLegacyDisplayMode(value: unknown): DisplayMode | null {
 // Kept as a descriptive alias for pure callers and the standalone contract.
 export const migrateStoredDisplayMode = migrateLegacyDisplayMode
 
-/** Resolve the raw preference, keeping Console as the first-visit default. */
+/** Start the learning site with its visible subject navigation. */
 export function resolveStoredDisplayMode(
   storedValue: unknown,
   legacyValue: unknown,
