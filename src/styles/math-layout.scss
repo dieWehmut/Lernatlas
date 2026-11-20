@@ -1,0 +1,288 @@
+/* Learning-page refinements for Vorlage. Keep the shell, local LXGW WenKai
+   font, and every colour preference; opaque surfaces protect text over the
+   particle background. All selectors stay inside the learning pages. */
+.math-page {
+  --math-surface: color-mix(in srgb, var(--site-bg) 97%, var(--site-text));
+  --math-surface-raised: color-mix(in srgb, var(--site-bg) 94%, var(--site-text));
+  --math-border: color-mix(in srgb, var(--site-text) 25%, var(--site-bg));
+  --math-link: color-mix(in srgb, var(--site-accent) 78%, var(--site-text));
+  --math-selection: color-mix(in srgb, var(--site-accent) 12%, var(--math-surface));
+
+  width: 100%;
+  min-width: 0;
+  color: var(--site-text);
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.math-page.math-view :is(h1, h2, h3, p, li, dt, dd, a, button, label) {
+  min-width: 0;
+}
+
+.math-page.math-view :is(h1, h2, h3) {
+  text-wrap: balance;
+}
+
+.math-page.math-view :is(p, li, dd) {
+  text-wrap: pretty;
+}
+
+.math-page.math-view .page-heading__description {
+  max-width: 42em;
+  line-height: 1.85;
+  --markdown-preview-lines: 5;
+}
+
+.math-page.math-view :is(
+  .learning-stats > div,
+  .learning-subject-card,
+  .learning-collection-card,
+  .learning-topic-card,
+  .learning-document-card,
+  .learning-advice,
+  .learning-empty
+) {
+  background: var(--math-surface);
+}
+
+.math-page.math-view :is(.learning-topic-card, .learning-document-card, .learning-advice) {
+  border-color: var(--math-border);
+}
+
+.math-page.math-view :is(.learning-subject-card, .learning-collection-card) {
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.math-page.math-view :is(.learning-subject-card, .learning-collection-card):hover {
+  border-color: var(--math-link);
+  background: var(--math-surface-raised);
+}
+
+.math-page.math-view .learning-topic-card:focus-within {
+  border-color: var(--math-link);
+}
+
+.math-page.math-view :is(
+  .learning-topic-card__collection,
+  .learning-topic-card__solutions,
+  .learning-document-card__role,
+  .learning-collection-card > span,
+  .learning-subject-card__body small,
+  .learning-guide__note a,
+  .learning-section__heading > a,
+  .math-topic__meta a,
+  .learning-catalog__more
+) {
+  color: var(--math-link);
+}
+
+.math-page.math-view .learning-topic-card__title a:hover {
+  color: var(--math-link);
+}
+
+.math-page.math-view :is(.learning-topic-card__summary, .learning-collection-card p) {
+  line-height: 1.85;
+}
+
+.math-page.math-view :is(.learning-topic-card__meta, .learning-topic-card__footer) {
+  align-items: baseline;
+  line-height: 1.7;
+}
+
+.math-page.math-view .learning-tag {
+  min-height: 30px;
+  align-items: center;
+  color: var(--site-muted);
+  background: var(--math-surface-raised);
+}
+
+.math-page.math-view .learning-tag:hover {
+  color: var(--math-link);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.math-page.math-view .learning-search__input {
+  border-color: var(--math-border);
+  background: var(--math-surface);
+}
+
+.math-page.math-view .learning-search__input:focus-within {
+  border-color: var(--math-link);
+  box-shadow: 0 0 0 2px var(--math-selection);
+}
+
+.math-page.math-view .learning-search input {
+  font-size: 16px;
+}
+
+.math-page.math-view .learning-search input::placeholder {
+  color: var(--site-muted);
+  opacity: 1;
+}
+
+.math-page.math-view :is(
+  .learning-search__submit,
+  .learning-filters__collections button,
+  .learning-filters__secondary select,
+  .learning-filters__clear,
+  .learning-empty button,
+  .learning-action,
+  .learning-document-card__details summary
+) {
+  min-height: 44px;
+  max-width: 100%;
+}
+
+.math-page.math-view .learning-filters__collections button {
+  color: var(--site-muted);
+  background: var(--math-surface);
+}
+
+.math-page.math-view .learning-filters__collections button span {
+  opacity: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.math-page.math-view :is(
+  .learning-search__submit,
+  .learning-filters__collections button.is-active,
+  .learning-action--primary,
+  .learning-empty button
+) {
+  border-color: var(--math-border);
+  color: var(--math-link);
+  background: var(--math-selection);
+}
+
+.math-page.math-view :is(
+  .learning-search__submit,
+  .learning-filters__collections button,
+  .learning-action,
+  .learning-empty button,
+  .learning-catalog__more
+):hover {
+  border-color: var(--math-link);
+  color: var(--math-link);
+  background: var(--math-selection);
+  text-decoration: none;
+}
+
+.math-page.math-view .learning-filters__secondary select {
+  min-width: 0;
+  border-color: var(--math-border);
+  background: var(--math-surface);
+  font-size: 16px;
+}
+
+.math-page.math-view .learning-catalog__tag-filter {
+  color: var(--math-link);
+  background: var(--math-selection);
+}
+
+.math-page.math-view .learning-catalog__tag-filter button {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+}
+
+.math-page.math-view .learning-document-card__main {
+  min-width: 0;
+}
+
+.math-page.math-view .learning-action {
+  border-color: var(--math-border);
+}
+
+.math-page.math-view .learning-action .el-icon {
+  flex: 0 0 auto;
+}
+
+.math-page.math-view .learning-document-card__details summary {
+  align-content: center;
+  padding-block: 8px;
+  color: var(--site-muted);
+}
+
+.math-page.math-view .learning-document-card__details code {
+  white-space: normal;
+  word-break: break-all;
+}
+
+.math-page.math-view .learning-catalog__more {
+  padding: 10px 16px;
+  background: var(--math-surface);
+  text-align: center;
+}
+
+.math-page.math-view :is(a, button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid var(--math-link);
+  outline-offset: 4px;
+  scroll-margin-block: 100px;
+}
+
+/* The right-hand table of contents reduces usable card width on small
+   desktops. Keep titles readable before the mobile shell takes over. */
+@media (min-width: 901px) and (max-width: 1180px) {
+  .math-page.math-home :is(.learning-collections, .learning-topic-grid),
+  .math-page.math-topic :is(.learning-related-grid, .learning-document-grid) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .math-page.math-view .page-heading__description {
+    --markdown-preview-lines: 7;
+  }
+
+  .math-page.math-view .learning-search input {
+    font-size: 16px;
+  }
+
+  .math-page.math-view .learning-filters__secondary select {
+    flex: 1 1 160px;
+  }
+
+  .math-page.math-view .learning-topic-card__footer {
+    justify-content: flex-start;
+    gap: 8px 16px;
+  }
+
+  .math-page.math-view .learning-document-card__actions .learning-action {
+    flex: 1 1 130px;
+  }
+
+  .math-page.math-view .learning-document-card__details dl > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .math-page,
+  .math-page *,
+  .math-page *::before,
+  .math-page *::after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .math-page {
+    --math-surface: Canvas;
+    --math-surface-raised: Canvas;
+    --math-border: ButtonText;
+    --math-link: LinkText;
+    --math-selection: Canvas;
+  }
+
+  .math-page.math-view .learning-filters__collections button.is-active {
+    border-color: Highlight;
+    color: HighlightText;
+    background: Highlight;
+  }
+}
