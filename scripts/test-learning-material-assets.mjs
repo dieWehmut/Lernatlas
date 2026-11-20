@@ -1,0 +1,63 @@
+import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
+import { readFile, stat } from 'node:fs/promises'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const catalog = JSON.parse(await readFile(path.join(root, 'src/data/learning/course-catalog.json'), 'utf8'))
+const original = JSON.parse(await readFile(path.join(root, 'src/data/learning/catalog.json'), 'utf8'))
+
+assert.equal(catalog.schemaVersion, 1)
+assert.equal(catalog.topics.length, 85, 'new materials should have 85 indexed topics')
+assert.equal(catalog.stats.topics, 85)
+assert.equal(catalog.topics.filter((topic) => topic.collectionId === 'grade10-volume1').length, 71)
+assert.equal(catalog.topics.filter((topic) => topic.collectionId === 'english-bridge').length, 14)
+assert.equal(new Set(catalog.topics.map((topic) => topic.id)).size, catalog.topics.length, 'topic ids must be unique')
+assert.equal(new Set([...original.topics, ...catalog.topics].map((topic) => topic.id)).size, original.topics.length + catalog.topics.length, 'new topic ids must not collide with the existing catalog')
+
+async function verifyAsset(url, expectedBytes, expectedSha256, expectedMagic) {
+  assert.ok(url && !url.startsWith('/') && !url.includes('..'), `expected a safe relative asset URL: ${url}`)
+  const assetPath = path.resolve(root, 'public', url)
+  assert.ok(assetPath.startsWith(path.resolve(root, 'public') + path.sep), `asset escaped public/: ${url}`)
+  const [bytes, info] = await Promise.all([readFile(assetPath), stat(assetPath)])
+  assert.equal(info.size, expectedBytes, `${url}: byte count mismatch`)
+  assert.equal(createHash('sha256').update(bytes).digest('hex'), expectedSha256, `${url}: SHA-256 mismatch`)
+  assert.ok(bytes.subarray(0, expectedMagic.length).equals(expectedMagic), `${url}: file signature mismatch`)
+}
+
+const verifiedAssets = new Set()
+for (const topic of catalog.topics) {
+  assert.ok(topic.title && topic.summary && topic.category, `${topic.id}: missing searchable metadata`)
+  assert.ok(['math', 'english'].includes(topic.subjectId), `${topic.id}: invalid subject`)
+  assert.equal(topic.collectionId === 'english-bridge', topic.subjectId === 'english', `${topic.id}: subject and collection mismatch`)
+  assert.ok(topic.documents.length > 0, `${topic.id}: missing documents`)
+
+  for (const document of topic.documents) {
+    assert.ok(document.pages > 0, `${document.id}: invalid page count`)
+    const pdfKey = `${document.url}:${document.sha256}`
+    if (!verifiedAssets.has(pdfKey)) {
+      await verifyAsset(document.url, document.bytes, document.sha256, Buffer.from('%PDF-'))
+      verifiedAssets.add(pdfKey)
+    }
+
+    assert.equal(document.role, 'lesson')
+    assert.ok(document.sourceDownload, `${document.id}: missing original DOCX download`)
+    assert.equal(document.sourceDownload.format, 'docx')
+    const docxKey = `${document.sourceDownload.url}:${document.sourceDownload.sha256}`
+    if (!verifiedAssets.has(docxKey)) {
+      await verifyAsset(document.sourceDownload.url, document.sourceDownload.bytes, document.sourceDownload.sha256, Buffer.from('PK'))
+      verifiedAssets.add(docxKey)
+    }
+  }
+}
+
+assert.equal(verifiedAssets.size, 170, 'each PDF and original DOCX should be represented exactly once')
+assert.equal(catalog.stats.sourceFiles, 85)
+assert.equal(catalog.stats.uniqueFiles, 85)
+assert.equal(catalog.stats.pages, 1510)
+assert.equal(catalog.stats.bytes, 21_510_146)
+assert.equal(catalog.stats.sourceDownloads.files, 85)
+assert.equal(catalog.stats.sourceDownloads.bytes, 12_708_420)
+
+console.log(`Verified ${catalog.topics.length} topics and ${verifiedAssets.size} PDF/DOCX assets.`)

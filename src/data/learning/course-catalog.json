@@ -1,0 +1,550 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-20T00:00:00Z",
+  "subjects": [
+    {
+      "id": "english",
+      "name": "英语",
+      "description": "整理英语基础衔接与学习资料，提供可阅读 PDF 及保留原始 Word 文件。"
+    }
+  ],
+  "collections": [
+    {
+      "id": "english-bridge",
+      "subjectId": "english",
+      "name": "小升初英语衔接",
+      "description": "按基础语音、词法、句法与时态组织小学升入初中的英语衔接资料；提供 PDF 阅读版与 DOCX 原件下载。"
+    }
+  ],
+  "topics": [
+    {
+      "id": "english-bridge-01",
+      "subjectId": "english",
+      "collectionId": "english-bridge",
+      "title": "字母和语音",
+      "category": "字母与语音",
+      "summary": "从字母书写、大小写规范与常见发音入手，梳理自然拼读和基础语音规则的衔接重点。",
+      "tags": [
+        "字母和语音",
+        "英语",
+        "小升初衔接",
+        "字母与语音"
+      ],
+      "prerequisites": [],
+      "difficulty": "衔接基础",
+      "order": 1,
+      "documents": [
+        {
+          "id": "english-bridge-01-source",
+          "role": "lesson",
+          "label": "字母和语音",
+          "filename": "字母和语音.pdf",
+          "originalPath": "衔接点01字母和语音（讲义，全国通用）英语小升初衔接.docx",
+          "url": "course-materials/english/english-1a620b68b556549c.pdf",
+          "pages": 31,
+          "bytes": 493876,
+          "sha256": "1a620b68b556549c6ff14022c41232c015161ea7207849b12463a1d726c13285",
+          "sourceDownload": {
+            "filename": "衔接点01字母和语音（讲义，全国通用）英语小升初衔接.docx",
+            "url": "course-materials/english/english-437dc6c96a2e282f.docx",
+            "bytes": 488840,
+            "sha256": "437dc6c96a2e282fc60ed817905117c7aee00e80b1f7abfbc81597bf4eb969ce",
+            "format": "docx"
+          }
+        }
+      ]
+    },
+    {
+      "id": "english-bridge-02",
+      "subjectId": "english",
+      "collectionId": "english-bridge",
+      "title": "冠词",
+      "category": "词法基础",
+      "summary": "围绕 a、an、the 与零冠词的选择，整理冠词形式、常见用法和语境判断。",
+      "tags": [
+        "冠词",
+        "英语",
+        "小升初衔接",
+        "词法基础"
+      ],
+      "prerequisites": [],
+      "difficulty": "衔接基础",
+      "order": 2,
+      "documents": [
+        {
+          "id": "english-bridge-02-source",
+          "role": "lesson",
+          "label": "冠词",
+          "filename": "冠词.pdf",
+          "originalPath": "衔接点02冠词（讲义，全国通用）英语小升初衔接.docx",
+          "url": "course-materials/english/english-a1e8b15ca3795044.pdf",
+          "pages": 27,
+          "bytes": 686233,
+          "sha256": "a1e8b15ca37950442f2bc9948c8811e0995a62350147686355b9fb7f46d4433d",
+          "sourceDownload": {
+            "filename": "衔接点02冠词（讲义，全国通用）英语小升初衔接.docx",
+            "url": "course-materials/english/english-da8dfdf54a58e6dd.docx",
+            "bytes": 611672,
+            "sha256": "da8dfdf54a58e6dd2cbbda37a87b4c117346a1c7e9ec0405d4fdfdd8e7af1af8",
+            "format": "docx"
+          }
+        }
+      ]
+    },
+    {
+      "id": "english-bridge-03",
+      "subjectId": "english",
+      "collectionId": "english-bridge",
+      "title": "名词",
+      "category": "词法基础",
+      "summary": "梳理名词分类、单复数变化、所有格及常见搭配等基础知识。",
+      "tags": [
+        "名词",
+        "英语",
+        "小升初衔接",
+        "词法基础"
+      ],
+      "prerequisites": [],
+      "difficulty": "衔接基础",
+      "order": 3,
+      "documents": [
+        {
+          "id": "english-bridge-03-source",
+          "role": "lesson",
+          "label": "名词",
+          "filename": "名词.pdf",
+          "originalPath": "衔接点03名词（讲义，全国通用）英语小升初衔接.docx",
+          "url": "course-materials/english/english-d332917dcb43957f.pdf",
+          "pages": 25,
+          "bytes": 297500,
+          "sha256": "d332917dcb43957f14f99b57e983395275096fc3153d94f23421e93dbf28bfd9",
+          "sourceDownload": {
+            "filename": "衔接点03名词（讲义，全国通用）英语小升初衔接.docx",
+            "url": "course-materials/english/english-1cefc05bbeb6a301.docx",
+            "bytes": 65648,
+            "sha256": "1cefc05bbeb6a30102ba2eac124e34f4fa08eeee64f42cf6d3949d3fdb7a982b",
+            "format": "docx"
+          }
+        }
+      ]
+    },
+    {
+      "id": "english-bridge-04",
+      "subjectId": "english",
+      "collectionId": "english-bridge",
+      "title": "代词",
+      "category": "词法基础",
+      "summary": "按类别整理人称、物主、反身、指示和疑问代词的形式与基本用法。",
+      "tags": [
+        "代词",
+        "英语",
+        "小升初衔接",
+        "词法基础"
+      ],
+      "prerequisites": [],
+      "difficulty": "衔接基础",
+      "order": 4,
+      "documents": [
+        {
+          "id": "english-bridge-04-source",
+          "role": "lesson",
+          "label": "代词",
+          "filename": "代词.pdf",
+          "originalPath": "衔接点04代词（讲义，全国通用）英语小升初衔接.docx",
+          "url": "course-materials/english/english-c53865deb8bf9abb.pdf",
+          "pages": 27,
+          "bytes": 327155,
+          "sha256": "c53865deb8bf9abbed4cca4d7bfaab1132af55e3c8e49c5f18cd57f805cee458",
+          "sourceDownload": {
+            "filename": "衔接点04代词（讲义，全国通用）英语小升初衔接.docx",
+            "url": "course-materials/english/english-00d0fc0cd9901c25.docx",
+            "bytes": 238768,
+            "sha256": "00d0fc0cd9901c2534c931c3e10ccae134674d1d6d2184ec85c802e52e65b506",
+            "format": "docx"
+          }
+        }
+      ]
+    },
+    {
+      "id": "english-bridge-05",
+      "subjectId": "english",
+      "collectionId": "english-bridge",
+      "title": "数词",
+      "category": "词法基础",
+      "summary": "围绕基数词、序数词及常见数字表达，整理读写规则和基础用法。",
+      "tags": [
+        "数词",
+        "英语",
+        "小升初衔接",
+        "词法基础"
+      ],
+      "prerequisites": [],
+      "difficulty": "衔接基础",
+      "order": 5,
+      "documents": [
+        {
+          "id": "english-bridge-05-source",
+          "role": "lesson",
+          "label": "数词",
+          "filename": "数词.pdf",
+          "originalPath": "衔接点05数词（讲义，全国通用）英语小升初衔接.docx",
+          "url": "course-materials/english/english-93a0864db65ab8d4.pdf",
+          "pages": 17,
+          "bytes": 260173,
+          "sha256": "93a0864db65ab8d4aa44c7625ff7bb7f6d09f007696ce42c45fa8c6fdf73fdca",
+          "sourceDownload": {
+            "filename": "衔接点05数词（讲义，全国通用）英语小升初衔接.docx",
+            "url": "course-materials/english/english-e4c6c8b1e5770eae.docx",
+            "bytes": 237408,
+            "sha256": "e4c6c8b1e5770eae890e53cce209919ef0b0f8925e7048574a4b353bfd5dea8b",
+            "format": "docx"
+          }
+        }
+      ]
+    },
+    {
+      "id": "english-bridge-06",
+      "subjectId": "english",
+      "collectionId": "english-bridge",
+      "title": "介词",
+      "category": "词法基础",
+      "summary": "梳理时间、方位等常见介词及介词短语，配合语境理解基本搭配。",
+      "tags": [
+        "介词",
+        "英语",
+        "小升初衔接",
+        "词法基础"
+      ],
+      "prerequisites": [],
+      "difficulty": "衔接基础",
+      "order": 6,
+      "documents": [
+        {
+          "id": "english-bridge-06-source",
+          "role": "lesson",
+          "label": "介词",
+          "filename": "介词.pdf",
+          "originalPath": "衔接点06介词（讲义，全国通用）英语小升初衔接.docx",
+          "url": "course-materials/english/english-24af6b40bed91be2.pdf",
+          "pages": 22,
+          "bytes": 348160,
+          "sha256": "24af6b40bed91be26a071177af599b21dba62a4c54f3cd0e740bee99d69a505f",
+          "sourceDownload": {
+            "filename": "衔接点06介词（讲义，全国通用）英语小升初衔接.docx",
+            "url": "course-materials/english/english-455e5be346fdab60.docx",
+            "bytes": 238383,
+            "sha256": "455e5be346fdab601d6a15cfc43ecdd2f8066b819d8d4bd3f9ac85fcb1d8264e",
+            "format": "docx"
+          }
+        }
+      ]
+    },
+    {
+      "id": "english-bridge-07",
+      "subjectId": "english",
+      "collectionId": "english-bridge",
+      "title": "连词",
+      "category": "词法基础",
+      "summary": "整理并列与从属连词的常见类型、意义关系和基础句中用法。",
+      "tags": [
+        "连词",
+        "英语",
+        "小升初衔接",
+        "词法基础"
+      ],
+      "prerequisites": [],
+      "difficulty": "衔接基础",
+      "order": 7,
+      "documents": [
+        {
+          "id": "english-bridge-07-source",
+          "role": "lesson",
+          "label": "连词",
+          "filename": "连词.pdf",
+          "originalPath": "衔接点07连词（讲义，全国通用）英语小升初衔接.docx",
+          "url": "course-materials/english/english-5a1a74e8a7c3a57a.pdf",
+          "pages": 16,
+          "bytes": 317526,
+          "sha256": "5a1a74e8a7c3a57aa88126931e4968364d11b8cd49118b8807c1e0b9f36e9b2b",
+          "sourceDownload": {
+            "filename": "衔接点07连词（讲义，全国通用）英语小升初衔接.docx",
+            "url": "course-materials/english/english-d65fd00680468c5b.docx",
+            "bytes": 368623,
+            "sha256": "d65fd00680468c5b268bab4f74d6dcfd3a546e02566e4bf0ef4b78cd66854d74",
+            "format": "docx"
+          }
+        }
+      ]
+    },
+    {
+      "id": "english-bridge-08",
+      "subjectId": "english",
+      "collectionId": "english-bridge",
+      "title": "动词和动词短语",
+      "category": "词法基础",
+      "summary": "梳理动词分类、基本形式变化与常见动词短语，连接词汇和句子表达。",
+      "tags": [
+        "动词和动词短语",
+        "英语",
+        "小升初衔接",
+        "词法基础"
+      ],
+      "prerequisites": [],
+      "difficulty": "衔接基础",
+      "order": 8,
+      "documents": [
+        {
+          "id": "english-bridge-08-source",
+          "role": "lesson",
+          "label": "动词和动词短语",
+          "filename": "动词和动词短语.pdf",
+          "originalPath": "衔接点08动词和动词短语（讲义，全国通用）英语小升初衔接.docx",
+          "url": "course-materials/english/english-4e498e9dbfdad22b.pdf",
+          "pages": 26,
+          "bytes": 574864,
+          "sha256": "4e498e9dbfdad22baff73cfa8f333447d4038e2c56738ae5d425793a488ee8e6",
+          "sourceDownload": {
+            "filename": "衔接点08动词和动词短语（讲义，全国通用）英语小升初衔接.docx",
+            "url": "course-materials/english/english-7df243ac11a3be22.docx",
+            "bytes": 520486,
+            "sha256": "7df243ac11a3be22c0735898bc1f73db7be70794aa4408537d65e2701385f871",
+            "format": "docx"
+          }
+        }
+      ]
+    },
+    {
+      "id": "english-bridge-09",
+      "subjectId": "english",
+      "collectionId": "english-bridge",
+      "title": "形容词和副词",
+      "category": "词法基础",
+      "summary": "围绕形容词、副词的常见功能、位置和比较等级，整理基础辨析方法。",
+      "tags": [
+        "形容词和副词",
+        "英语",
+        "小升初衔接",
+        "词法基础"
+      ],
+      "prerequisites": [],
+      "difficulty": "衔接基础",
+      "order": 9,
+      "documents": [
+        {
+          "id": "english-bridge-09-source",
+          "role": "lesson",
+          "label": "形容词和副词",
+          "filename": "形容词和副词.pdf",
+          "originalPath": "衔接点09形容词和副词（讲义，全国通用）英语小升初衔接.docx",
+          "url": "course-materials/english/english-62bc3aec0f6a1af5.pdf",
+          "pages": 23,
+          "bytes": 631928,
+          "sha256": "62bc3aec0f6a1af59a86c3416533f4de29751bc7b424179f283e46116319cd96",
+          "sourceDownload": {
+            "filename": "衔接点09形容词和副词（讲义，全国通用）英语小升初衔接.docx",
+            "url": "course-materials/english/english-9916e319b4bb1f58.docx",
+            "bytes": 406089,
+            "sha256": "9916e319b4bb1f5856171368b293c75c0879722eccc0ed04fab4f038f0505be8",
+            "format": "docx"
+          }
+        }
+      ]
+    },
+    {
+      "id": "english-bridge-10",
+      "subjectId": "english",
+      "collectionId": "english-bridge",
+      "title": "简单句及主谓一致",
+      "category": "句子与语法",
+      "summary": "从常见简单句结构和主谓一致入手，整理句子表达及谓语形式判断。",
+      "tags": [
+        "简单句及主谓一致",
+        "英语",
+        "小升初衔接",
+        "句子与语法"
+      ],
+      "prerequisites": [],
+      "difficulty": "衔接基础",
+      "order": 10,
+      "documents": [
+        {
+          "id": "english-bridge-10-source",
+          "role": "lesson",
+          "label": "简单句及主谓一致",
+          "filename": "简单句及主谓一致.pdf",
+          "originalPath": "衔接点10简单句及主谓一致（讲义，全国通用）英语小升初衔接.docx",
+          "url": "course-materials/english/english-914bae2c35dd1796.pdf",
+          "pages": 21,
+          "bytes": 840015,
+          "sha256": "914bae2c35dd1796076e99ca57b13a83c48fd91245062c0ba01178a3374e02a9",
+          "sourceDownload": {
+            "filename": "衔接点10简单句及主谓一致（讲义，全国通用）英语小升初衔接.docx",
+            "url": "course-materials/english/english-ebd9b03ad7449a7f.docx",
+            "bytes": 484648,
+            "sha256": "ebd9b03ad7449a7f6f138bf9da9b2c7f35fa79051bf1795a859e7ef781d444af",
+            "format": "docx"
+          }
+        }
+      ]
+    },
+    {
+      "id": "english-bridge-11",
+      "subjectId": "english",
+      "collectionId": "english-bridge",
+      "title": "一般现在时",
+      "category": "动词时态",
+      "summary": "梳理一般现在时的常见意义、时间线索、动词形式与基本句型。",
+      "tags": [
+        "一般现在时",
+        "英语",
+        "小升初衔接",
+        "动词时态"
+      ],
+      "prerequisites": [],
+      "difficulty": "衔接基础",
+      "order": 11,
+      "documents": [
+        {
+          "id": "english-bridge-11-source",
+          "role": "lesson",
+          "label": "一般现在时",
+          "filename": "一般现在时.pdf",
+          "originalPath": "衔接点11一般现在时（讲义，全国通用）英语小升初衔接.docx",
+          "url": "course-materials/english/english-d26d51c4641e8f02.pdf",
+          "pages": 13,
+          "bytes": 288198,
+          "sha256": "d26d51c4641e8f02c0103709d96e1ea207b1620490ac5c32618074658d8e901a",
+          "sourceDownload": {
+            "filename": "衔接点11一般现在时（讲义，全国通用）英语小升初衔接.docx",
+            "url": "course-materials/english/english-8a0d5f9708aea216.docx",
+            "bytes": 595175,
+            "sha256": "8a0d5f9708aea216d190481c72d0bbc7a93b412aa079123035589638579e6d6e",
+            "format": "docx"
+          }
+        }
+      ]
+    },
+    {
+      "id": "english-bridge-12",
+      "subjectId": "english",
+      "collectionId": "english-bridge",
+      "title": "一般过去时",
+      "category": "动词时态",
+      "summary": "梳理一般过去时的基本用法、时间线索、动词变化和句型结构。",
+      "tags": [
+        "一般过去时",
+        "英语",
+        "小升初衔接",
+        "动词时态"
+      ],
+      "prerequisites": [],
+      "difficulty": "衔接基础",
+      "order": 12,
+      "documents": [
+        {
+          "id": "english-bridge-12-source",
+          "role": "lesson",
+          "label": "一般过去时",
+          "filename": "一般过去时.pdf",
+          "originalPath": "衔接点12一般过去时（讲义，全国通用）英语小升初衔接.docx",
+          "url": "course-materials/english/english-f70c40126614aeb3.pdf",
+          "pages": 16,
+          "bytes": 346347,
+          "sha256": "f70c40126614aeb3e093915c571f1172b0cea3a0e6db751deb2be63f5bcb2fa3",
+          "sourceDownload": {
+            "filename": "衔接点12一般过去时（讲义，全国通用）英语小升初衔接.docx",
+            "url": "course-materials/english/english-e792a0939d45aab3.docx",
+            "bytes": 314262,
+            "sha256": "e792a0939d45aab3b2da6a9eba2d4250fb7657516f7b5d0a70a34b3a2d22a981",
+            "format": "docx"
+          }
+        }
+      ]
+    },
+    {
+      "id": "english-bridge-13",
+      "subjectId": "english",
+      "collectionId": "english-bridge",
+      "title": "现在进行时",
+      "category": "动词时态",
+      "summary": "围绕正在进行的动作，整理现在进行时的构成、用法及常见句型。",
+      "tags": [
+        "现在进行时",
+        "英语",
+        "小升初衔接",
+        "动词时态"
+      ],
+      "prerequisites": [],
+      "difficulty": "衔接基础",
+      "order": 13,
+      "documents": [
+        {
+          "id": "english-bridge-13-source",
+          "role": "lesson",
+          "label": "现在进行时",
+          "filename": "现在进行时.pdf",
+          "originalPath": "衔接点13现在进行时（讲义，全国通用）英语小升初衔接.docx",
+          "url": "course-materials/english/english-b20e1d3b3cc97a93.pdf",
+          "pages": 16,
+          "bytes": 351321,
+          "sha256": "b20e1d3b3cc97a932bca7400209f49730d0924d7c8407bee8a2ef899346306da",
+          "sourceDownload": {
+            "filename": "衔接点13现在进行时（讲义，全国通用）英语小升初衔接.docx",
+            "url": "course-materials/english/english-4cbbf9885b5e0e31.docx",
+            "bytes": 448110,
+            "sha256": "4cbbf9885b5e0e31eae7639cb71919051d25461e2bca23c2043978080f70dd11",
+            "format": "docx"
+          }
+        }
+      ]
+    },
+    {
+      "id": "english-bridge-14",
+      "subjectId": "english",
+      "collectionId": "english-bridge",
+      "title": "一般将来时",
+      "category": "动词时态",
+      "summary": "梳理一般将来时的常见表达、时间线索及基本句型。",
+      "tags": [
+        "一般将来时",
+        "英语",
+        "小升初衔接",
+        "动词时态"
+      ],
+      "prerequisites": [],
+      "difficulty": "衔接基础",
+      "order": 14,
+      "documents": [
+        {
+          "id": "english-bridge-14-source",
+          "role": "lesson",
+          "label": "一般将来时",
+          "filename": "一般将来时.pdf",
+          "originalPath": "衔接点14一般将来时（讲义，全国通用）英语小升初衔接.docx",
+          "url": "course-materials/english/english-8409b79d0e73933a.pdf",
+          "pages": 14,
+          "bytes": 338999,
+          "sha256": "8409b79d0e73933a219650774535bad18eb80a756553b7071935a4bf9df6c351",
+          "sourceDownload": {
+            "filename": "衔接点14一般将来时（讲义，全国通用）英语小升初衔接.docx",
+            "url": "course-materials/english/english-8e21ca48924f8c7b.docx",
+            "bytes": 316273,
+            "sha256": "8e21ca48924f8c7b0948e82b80700ed0153a58e93df00ae909e0026a936a4fbf",
+            "format": "docx"
+          }
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "sourceFiles": 14,
+    "uniqueFiles": 14,
+    "topics": 14,
+    "pages": 294,
+    "bytes": 6102295,
+    "sourceDownloads": {
+      "files": 14,
+      "bytes": 5334385
+    }
+  }
+}

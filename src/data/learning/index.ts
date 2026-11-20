@@ -1,9 +1,32 @@
 import catalogData from './catalog.json'
+import courseCatalogData from './course-catalog.json'
 import type { Catalog, MaterialDocument, Topic } from './types'
 
-export type { Catalog, Collection, MaterialDocument, Topic } from './types'
+export type { Catalog, Collection, MaterialDocument, SourceDownload, Topic } from './types'
 
-export const catalog: Catalog = catalogData as Catalog
+const originalCatalog = catalogData as Catalog
+const courseCatalog = courseCatalogData as Catalog
+const mergedTopics = [...originalCatalog.topics, ...courseCatalog.topics]
+const mergedCollections = [...originalCatalog.collections, ...courseCatalog.collections]
+const mergedSubjects = [...new Map(
+  [...originalCatalog.subjects, ...courseCatalog.subjects].map((subject) => [subject.id, subject]),
+).values()]
+
+export const catalog: Catalog = {
+  ...originalCatalog,
+  generatedAt: courseCatalog.generatedAt || originalCatalog.generatedAt,
+  subjects: mergedSubjects,
+  collections: mergedCollections,
+  topics: mergedTopics,
+  stats: {
+    sourceFiles: originalCatalog.stats.sourceFiles + courseCatalog.stats.sourceFiles,
+    uniqueFiles: originalCatalog.stats.uniqueFiles + courseCatalog.stats.uniqueFiles,
+    topics: mergedTopics.length,
+    pages: originalCatalog.stats.pages + courseCatalog.stats.pages,
+    bytes: originalCatalog.stats.bytes + courseCatalog.stats.bytes,
+    sourceDownloads: courseCatalog.stats.sourceDownloads ?? { files: 0, bytes: 0 },
+  },
+}
 export const topics = catalog.topics
 export const collections = catalog.collections
 

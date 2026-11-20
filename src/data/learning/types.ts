@@ -1,6 +1,15 @@
 /** Public learning catalog. All paths are relative to the deployed site. */
-export type CollectionId = 'junior' | 'senior' | 'competition'
-export type DocumentRole = 'questions' | 'solutions' | 'notes'
+export type CollectionId = 'junior' | 'senior' | 'competition' | 'grade10-volume1' | 'english-bridge'
+export type DocumentRole = 'questions' | 'solutions' | 'notes' | 'lesson'
+
+export interface SourceDownload {
+  filename: string
+  /** Relative to the deployed site, never an absolute URL or machine-local path. */
+  url: string
+  bytes: number
+  sha256: string
+  format: 'docx'
+}
 
 export interface MaterialDocument {
   id: string
@@ -14,6 +23,10 @@ export interface MaterialDocument {
   pages: number
   bytes: number
   sha256: string
+  /** Preserved source document, separate from the PDF used for in-browser reading. */
+  sourceDownload?: SourceDownload
+  /** True only when the source itself contains an answer or explanation section. */
+  includesSolutions?: boolean
 }
 
 export interface Collection {
@@ -36,6 +49,8 @@ export interface Topic {
   /** Editorial relative level; not an official grade or examination rating. */
   difficulty: string
   order: number
+  /** True only when source materials include an answer or explanation section. */
+  includesSolutions?: boolean
   documents: MaterialDocument[]
   relatedIds?: string[]
   reportId?: string
@@ -55,5 +70,10 @@ export interface Catalog {
     pages: number
     /** Total downloadable bytes, counted once per unique file. */
     bytes: number
+    /** Optional preserved source downloads, counted separately from PDF previews. */
+    sourceDownloads?: {
+      files: number
+      bytes: number
+    }
   }
 }
