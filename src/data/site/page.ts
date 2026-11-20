@@ -3,11 +3,11 @@ import type { WebsiteEntry } from '../../types/content'
 
 export const pages = ref<WebsiteEntry[]>([
   {
-    name: 'Vorlage',
-    displayName: 'Vorlage',
-    repoUrl: 'https://github.com/dieWehmut/Vorlage',
-    date: '2026-05-01',
-    url: 'https://diewehmut.github.io/Vorlage/',
+    name: 'tutor',
+    displayName: '学科资料站',
+    repoUrl: 'https://github.com/dieWehmut/tutor',
+    date: '2026-11-20',
+    url: 'https://diewehmut.github.io/tutor/',
   },
 ])
 

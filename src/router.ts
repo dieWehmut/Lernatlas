@@ -5,8 +5,10 @@ import { useDisplayModePreference } from './composables/useDisplayModePreference
 const viewLoaders = {
   postDetail: () => import('./views/PostView.vue'),
   noteDetail: () => import('./views/NoteView.vue'),
-  root: () => import('./views/RootView.vue'),
-  home: () => import('./views/HomeView.vue'),
+  root: () => import('./views/MathHomeView.vue'),
+  home: () => import('./views/MathHomeView.vue'),
+  mathCatalog: () => import('./views/MathCatalogView.vue'),
+  mathTopic: () => import('./views/MathTopicView.vue'),
   archive: () => import('./views/ArchiveView.vue'),
   notes: () => import('./views/NotesView.vue'),
   capture: () => import('./views/CaptureView.vue'),
@@ -24,6 +26,7 @@ const viewLoaders = {
 const primaryRoutePreloaders = new Map<string, () => Promise<unknown>>([
   ['/', viewLoaders.root],
   ['/home', viewLoaders.home],
+  ['/math', viewLoaders.mathCatalog],
   ['/archive', viewLoaders.archive],
   ['/notes', viewLoaders.notes],
   ['/capture', viewLoaders.capture],
@@ -41,6 +44,7 @@ const detailRoutePreloaders = new Map<string, () => Promise<unknown>>([
   ['post', viewLoaders.postDetail],
   ['note', viewLoaders.noteDetail],
   ['tags', viewLoaders.tagDetail],
+  ['math', viewLoaders.mathTopic],
 ])
 const preloadedRoutePaths = new Set<string>()
 
@@ -49,6 +53,8 @@ const routes = [
   { path: '/note/:id', name: 'note-detail', component: viewLoaders.noteDetail },
   { path: '/', name: 'root', component: viewLoaders.root },
   { path: '/home', name: 'home', component: viewLoaders.home },
+  { path: '/math', name: 'math-catalog', component: viewLoaders.mathCatalog },
+  { path: '/math/:id', name: 'math-topic', component: viewLoaders.mathTopic },
   { path: '/archive', name: 'archive', component: viewLoaders.archive },
   { path: '/notes', name: 'notes', component: viewLoaders.notes },
   { path: '/capture', name: 'capture', component: viewLoaders.capture },

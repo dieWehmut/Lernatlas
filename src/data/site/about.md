@@ -1,8 +1,23 @@
-## About This Site
+## 关于资料站
 
-This site is built with the [Vorlage](https://github.com/dieWehmut/Vorlage) template.
+这里按学科与专题整理学习资料，让原本分散的题目和解析能够方便地查找、阅读和下载。目前收录数学，分为初中数学、高中数学和数学竞赛三个合集。
 
-- Template demo: [https://diewehmut.github.io/Vorlage/](https://diewehmut.github.io/Vorlage/)
-- Production demo: [https://diewehmut.github.io/](https://diewehmut.github.io/)
+专题目录支持搜索标题、摘要、标签与前置知识，也可以按合集和专题方向筛选。每个专题单独列出已有的题目与解析文件；没有配入解析的专题会在页面说明。
 
-Replace this page with your own profile and project information.
+## 阅读与练习
+
+建议先浏览题目并独立尝试，再对照解析比较方法。遇到不熟悉的概念，可以结合专题页的前置知识建议补充复习。
+
+专题摘要用于帮助定位资料；难度与前置知识属于编辑阅读建议，并非原始 PDF 的官方分级或考试评级。具体题目、公式与解答请以 PDF 正文为准。
+
+## 资料与来源
+
+网站保留原始 PDF，不改写文件内容。相同内容的文件按哈希去重保存；专题的题目与解析配对依据资料正文、页数与文件信息核对，不仅依赖文件名后缀。
+
+专题页的「文件与来源信息」可以查看原始文件名、资料内路径与 SHA-256。在线阅读会在新标签页打开 PDF，下载入口则便于离线练习。资料目录的页数按去重后的文件统计，避免重复计算相同 PDF。
+
+如发现题目、解析配对或专题说明有误，可前往 [GitHub 仓库](https://github.com/dieWehmut/tutor) 反馈，并附上专题名称与原始文件名。
+
+## 网站模板
+
+网站沿用 [dieWehmut/Vorlage](https://github.com/dieWehmut/Vorlage) 的 Vue 页面结构、组件与主题样式，保留上游 MIT 许可和来源记录。
