@@ -25,8 +25,6 @@ export interface MaterialDocument {
   sha256: string
   /** Preserved source document, separate from the PDF used for in-browser reading. */
   sourceDownload?: SourceDownload
-  /** True only when the source itself contains an answer or explanation section. */
-  includesSolutions?: boolean
 }
 
 export interface Collection {
