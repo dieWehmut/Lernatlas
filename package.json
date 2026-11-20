@@ -48,7 +48,11 @@
     "typecheck": "vue-tsc --noEmit",
     "infra:status:sync": "node scripts/generate-infra-status.mjs",
     "build": "pnpm run content:sync && node --max-old-space-size=4096 ./node_modules/vite/bin/vite.js build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:learning-catalog": "node scripts/test-learning-catalog.mjs",
+    "verify:build": "node scripts/verify-static-build.mjs",
+    "test": "pnpm run test:learning-catalog && pnpm run test:math-placeholder && pnpm run test:organize-doc-images && pnpm run test:scoped-styles && pnpm run test:pdf-preview && pnpm run test:pdf-worker && pnpm run test:pdf-cache",
+    "check": "pnpm run typecheck && pnpm test"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
