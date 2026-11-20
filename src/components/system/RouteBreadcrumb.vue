@@ -87,6 +87,7 @@ const staticPages: Record<string, Crumb> = {
   home: { label: '学科首页', to: '/home' },
   'math-home': { label: '数学资料', to: '/math' },
   'math-catalog': { label: '数学资料', to: '/math' },
+  'english-catalog': { label: '英语资料', to: '/english' },
   archive: { label: 'Archive', to: '/archive' },
   notes: { label: '学习路线', to: '/notes' },
   capture: { label: 'Capture', to: '/capture' },
@@ -133,18 +134,24 @@ function detailTitle() {
 const crumbs = computed<Crumb[]>(() => {
   const siteCrumb = { label: siteProfile.title || 'Nexus', to: '/home' }
   const name = String(route.name || '')
-  if (route.path.startsWith('/math/')) {
+  if (route.path.startsWith('/math/') || route.path.startsWith('/english/')) {
     const topic = getTopic(String(route.params.id || ''))
     const collection = collections.find((item) => item.id === topic?.collectionId)
+    const subjectPath = topic?.subjectId === 'english' ? '/english' : '/math'
+    const subjectName = topic?.subjectId === 'english' ? '英语资料' : '数学资料'
     return [
-      { label: '数学资料', to: '/math' },
-      ...(collection ? [{ label: collection.name, to: `/math?collection=${collection.id}` }] : []),
+      { label: subjectName, to: subjectPath },
+      ...(collection ? [{ label: collection.name, to: `${subjectPath}?collection=${collection.id}` }] : []),
       { label: topic?.title || '专题' },
     ]
   }
   if (route.path === '/math') {
     const collection = collections.find((item) => item.id === route.query.collection)
     return [siteCrumb, { label: collection?.name || '数学资料', to: '/math' }]
+  }
+  if (route.path === '/english') {
+    const collection = collections.find((item) => item.id === route.query.collection && item.subjectId === 'english')
+    return [siteCrumb, { label: collection?.name || '英语资料', to: '/english' }]
   }
   const section = readingPath.value
   // An article's own title is its first heading, so while the reader is still at

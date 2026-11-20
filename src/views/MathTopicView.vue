@@ -14,7 +14,7 @@
         <h2 id="topic-overview">专题概览</h2>
         <p class="math-topic__summary">{{ topic.summary }}</p>
         <div class="math-topic__tags" aria-label="专题标签">
-          <RouterLink v-for="tag in topic.tags" :key="tag" :to="{ path: '/math', query: { tag } }" class="learning-tag">
+          <RouterLink v-for="tag in topic.tags" :key="tag" :to="{ path: catalogPath, query: { tag } }" class="learning-tag">
             <el-icon aria-hidden="true"><PriceTag /></el-icon>{{ tag }}
           </RouterLink>
         </div>
@@ -39,14 +39,15 @@
 
       <section class="learning-section" aria-labelledby="topic-documents">
         <div class="learning-section__heading">
-          <h2 id="topic-documents">题目与解析</h2>
+          <h2 id="topic-documents">资料文件</h2>
           <span>{{ topic.documents.length }} 份 PDF · {{ totalPages }} 页</span>
         </div>
-        <p class="math-topic__document-hint">「在线阅读」会在新标签页打开原始 PDF；也可以下载后离线练习。</p>
+        <p class="math-topic__document-hint">「在线阅读」会在新标签页打开 PDF；每份资料也可下载 PDF 或原始 Word 文件。</p>
         <div class="learning-document-grid">
           <LearningDocumentCard v-for="document in orderedDocuments" :key="document.id" :document="document" />
         </div>
-        <p v-if="!hasSolutions" class="math-topic__document-note">这个专题当前只收录题目，尚未配入解析文件。</p>
+        <p v-if="hasSolutions" class="math-topic__document-note">已根据原始资料标记含答案或解析内容；具体内容与完整度请以原件为准。</p>
+        <p v-else class="math-topic__document-note">目录未将本专题标记为含答案与解析；请以原始资料内容为准。</p>
       </section>
 
       <section class="learning-section learning-advice" aria-labelledby="topic-advice">
@@ -58,7 +59,7 @@
             <dt>前置知识</dt>
             <dd>
               <ul v-if="topic.prerequisites.length"><li v-for="item in topic.prerequisites" :key="item">{{ item }}</li></ul>
-              <span v-else>可先浏览题目，结合自己的掌握情况选择起点。</span>
+              <span v-else>可先浏览资料，结合自己的掌握情况选择起点。</span>
             </dd>
           </div>
         </dl>
@@ -76,7 +77,7 @@
     </div>
     <div v-else class="math-view__main math-topic__missing">
       <PageHeading title="没有找到这个专题" description="专题链接可能已经调整。回到目录，可以继续按标题或知识点查找资料。" :icon="Warning" />
-      <RouterLink class="math-back-link" to="/math"><el-icon aria-hidden="true"><Back /></el-icon>返回数学专题目录</RouterLink>
+      <RouterLink class="math-back-link" :to="catalogPath"><el-icon aria-hidden="true"><Back /></el-icon>返回专题目录</RouterLink>
     </div>
     <ScrollSpySidebar v-if="topic" root-selector=".math-topic .math-view__main" heading-selector="h2[id]" />
   </section>
@@ -98,12 +99,13 @@ import type { Topic } from '../data/learning'
 const route = useRoute()
 const topic = computed(() => getTopic(String(route.params.id || '')))
 const topicErrata = computed(() => topic.value ? getTopicErrata(topic.value) : [])
-const collectionName = computed(() => collections.find((collection) => collection.id === topic.value?.collectionId)?.name || '数学资料')
-const collectionRoute = computed(() => ({ path: '/math', query: { collection: topic.value?.collectionId } }))
+const catalogPath = computed(() => topic.value?.subjectId === 'english' ? '/english' : '/math')
+const collectionName = computed(() => collections.find((collection) => collection.id === topic.value?.collectionId)?.name || '学习资料')
+const collectionRoute = computed(() => ({ path: catalogPath.value, query: { collection: topic.value?.collectionId } }))
 const totalPages = computed(() => topic.value?.documents.reduce((sum, document) => sum + document.pages, 0) || 0)
-const hasSolutions = computed(() => topic.value?.documents.some((document) => document.role === 'solutions'))
+const hasSolutions = computed(() => topic.value?.includesSolutions ?? topic.value?.documents.some((document) => document.role === 'solutions') ?? false)
 const orderedDocuments = computed(() => {
-  const roleOrder = { questions: 0, solutions: 1, notes: 2 }
+  const roleOrder = { questions: 0, solutions: 1, notes: 2, lesson: 0 }
   return [...(topic.value?.documents || [])].sort((left, right) => roleOrder[left.role] - roleOrder[right.role])
 })
 const relatedTopics = computed<Topic[]>(() => {

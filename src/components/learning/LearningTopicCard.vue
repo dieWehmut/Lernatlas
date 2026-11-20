@@ -17,7 +17,7 @@
       <RouterLink
         v-for="tag in topic.tags.slice(0, 4)"
         :key="tag"
-        :to="{ path: '/math', query: { tag } }"
+        :to="{ path: catalogPath, query: { tag } }"
         class="learning-tag"
       >{{ tag }}</RouterLink>
     </div>
@@ -26,7 +26,7 @@
         <el-icon aria-hidden="true"><Document /></el-icon>
         {{ topic.documents.length }} 份资料 · {{ totalPages }} 页
       </span>
-      <span v-if="hasSolutions" class="learning-topic-card__solutions">含解析</span>
+      <span v-if="hasSolutions" class="learning-topic-card__solutions">含答案与解析</span>
       <span v-else class="learning-topic-card__level">{{ topic.difficulty }} · 编辑建议</span>
     </div>
   </article>
@@ -40,11 +40,12 @@ import { collections } from '../../data/learning'
 import type { Topic } from '../../data/learning'
 
 const props = defineProps<{ topic: Topic }>()
-const topicRoute = computed(() => ({ name: 'math-topic', params: { id: props.topic.id } }))
-const collectionRoute = computed(() => ({ path: '/math', query: { collection: props.topic.collectionId } }))
+const catalogPath = computed(() => props.topic.subjectId === 'english' ? '/english' : '/math')
+const topicRoute = computed(() => ({ path: `${catalogPath.value}/${props.topic.id}` }))
+const collectionRoute = computed(() => ({ path: catalogPath.value, query: { collection: props.topic.collectionId } }))
 const collectionName = computed(() => collections.find((item) => item.id === props.topic.collectionId)?.name || '数学资料')
 const totalPages = computed(() => props.topic.documents.reduce((sum, document) => sum + document.pages, 0))
-const hasSolutions = computed(() => props.topic.documents.some((document) => document.role === 'solutions'))
+const hasSolutions = computed(() => props.topic.includesSolutions ?? props.topic.documents.some((document) => document.role === 'solutions'))
 </script>
 
 <style scoped>

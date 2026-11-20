@@ -31,6 +31,16 @@
         <el-icon aria-hidden="true"><Download /></el-icon>
         下载 PDF
       </a>
+      <a
+        v-if="document.sourceDownload"
+        :href="sourceUrl"
+        :download="document.sourceDownload.filename"
+        class="learning-action"
+        :aria-label="`下载${document.label}的 Word 原件`"
+      >
+        <el-icon aria-hidden="true"><Download /></el-icon>
+        下载 Word 原件
+      </a>
     </div>
     <details class="learning-document-card__details">
       <summary>文件与来源信息</summary>
@@ -51,7 +61,18 @@ import type { MaterialDocument } from '../../data/learning'
 
 const props = defineProps<{ document: MaterialDocument }>()
 const url = computed(() => materialUrl(props.document))
-const roleLabel = computed(() => ({ questions: '题目', solutions: '解析', notes: '讲义' })[props.document.role])
+const sourceUrl = computed(() => {
+  const source = props.document.sourceDownload
+  if (!source) return ''
+  const base = import.meta.env.BASE_URL.replace(/\/?$/, '/')
+  return `${base}${source.url.replace(/^\/+/, '')}`
+})
+const roleLabel = computed(() => ({
+  questions: '题目',
+  solutions: '解析',
+  notes: '讲义',
+  lesson: '课程讲义与练习',
+}[props.document.role] || '学习资料'))
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`

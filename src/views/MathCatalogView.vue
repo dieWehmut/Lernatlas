@@ -4,7 +4,7 @@
       <RouterLink class="math-back-link" to="/home"><el-icon aria-hidden="true"><Back /></el-icon>返回学习首页</RouterLink>
       <PageHeading
         title="数学专题目录"
-        description="按初中、高中和竞赛浏览资料，也可以搜索知识点、题型与方法。进入专题后，可分别阅读题目和解析。"
+        description="按初中、高中和竞赛浏览资料，也可以搜索知识点、题型与方法。专题页提供 PDF 阅读、Word 原件下载及答案解析标记。"
         :icon="Collection"
       />
       <LearningCatalog />

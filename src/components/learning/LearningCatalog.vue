@@ -2,10 +2,10 @@
   <section class="learning-catalog learning-section" :aria-labelledby="headingId">
     <div class="learning-section__heading">
       <h2 :id="headingId">{{ title }}</h2>
-      <span class="learning-catalog__total">{{ topics.length }} 个专题</span>
+      <span class="learning-catalog__total">{{ subjectTopics.length }} 个专题</span>
     </div>
     <form class="learning-search" role="search" @submit.prevent="persistFilters">
-      <label :for="`${headingId}-search`" class="learning-sr-only">搜索数学专题</label>
+      <label :for="`${headingId}-search`" class="learning-sr-only">搜索{{ subjectName }}专题</label>
       <div class="learning-search__input">
         <el-icon aria-hidden="true"><Search /></el-icon>
         <input
@@ -21,7 +21,7 @@
       <button class="learning-search__submit" type="submit">搜索</button>
     </form>
     <p :id="`${headingId}-hint`" class="learning-search__hint">
-      可搜索标题、摘要、标签和前置知识，例如「函数」「几何」「数列」。
+      可搜索标题、摘要、标签和前置知识，例如「函数」「语法」「时态」。
     </p>
     <div class="learning-filters">
       <div class="learning-filters__collections" role="group" aria-label="按资料合集筛选">
@@ -30,9 +30,9 @@
           :class="{ 'is-active': !selectedCollection }"
           :aria-pressed="!selectedCollection"
           @click="selectCollection('')"
-        >全部<span>{{ topics.length }}</span></button>
+        >全部<span>{{ subjectTopics.length }}</span></button>
         <button
-          v-for="collection in collections"
+          v-for="collection in subjectCollections"
           :key="collection.id"
           type="button"
           :class="{ 'is-active': selectedCollection === collection.id }"
@@ -42,10 +42,13 @@
       </div>
       <div class="learning-filters__secondary">
         <label :for="`${headingId}-category`">专题方向</label>
-        <select :id="`${headingId}-category`" :value="selectedCategory" @change="selectCategory">
-          <option value="">全部方向</option>
-          <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
-        </select>
+        <LearningCategorySelect
+          :id="`${headingId}-category`"
+          :model-value="selectedCategory"
+          :options="categoryOptions"
+          :total-count="collectionTopics.length"
+          @update:model-value="selectCategory"
+        />
         <button v-if="hasFilters" type="button" class="learning-filters__clear" @click="clearFilters">
           清除筛选
         </button>
@@ -77,21 +80,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ArrowRight, Close, Search } from '@element-plus/icons-vue'
 import LearningTopicCard from './LearningTopicCard.vue'
-import { collections, topics } from '../../data/learning'
+import { catalog, collections, topics } from '../../data/learning'
 import type { CollectionId } from '../../data/learning/types'
+import LearningCategorySelect from './LearningCategorySelect.vue'
 
 const props = withDefaults(defineProps<{
   title?: string
   headingId?: string
   previewLimit?: number
+  subjectId?: string
 }>(), {
   title: '专题目录',
   headingId: 'math-catalog',
   previewLimit: 0,
+  subjectId: 'math',
 })
 
 const route = useRoute()
@@ -100,6 +106,15 @@ const query = ref('')
 const selectedCollection = ref<CollectionId | ''>('')
 const selectedCategory = ref('')
 const selectedTag = ref('')
+const subjectTopics = computed(() => topics.filter((topic) => topic.subjectId === props.subjectId))
+const subjectCollections = computed(() => collections.filter((collection) => collection.subjectId === props.subjectId))
+const collectionTopics = computed(() => subjectTopics.value.filter((topic) =>
+  !selectedCollection.value || topic.collectionId === selectedCollection.value,
+))
+const subjectName = computed(() => catalog.subjects.find((subject) => subject.id === props.subjectId)?.name || '学习')
+const catalogPath = computed(() => props.subjectId === 'english' ? '/english' : '/math')
+const filterPath = computed(() => route.path === '/' || route.path === '/home' ? route.path : catalogPath.value)
+let queryTimer: ReturnType<typeof setTimeout> | undefined
 
 function queryString(value: unknown): string {
   return typeof value === 'string' ? value : ''
@@ -108,7 +123,7 @@ function queryString(value: unknown): string {
 function syncRouteFilters() {
   query.value = queryString(route.query.q)
   const collection = queryString(route.query.collection)
-  selectedCollection.value = collections.some((item) => item.id === collection) ? collection as CollectionId : ''
+  selectedCollection.value = subjectCollections.value.some((item) => item.id === collection) ? collection as CollectionId : ''
   selectedCategory.value = queryString(route.query.category)
   selectedTag.value = queryString(route.query.tag)
 }
@@ -120,19 +135,22 @@ function normalize(value: string): string {
   return value.normalize('NFKC').toLocaleLowerCase().trim()
 }
 
-const categories = computed(() => [...new Set(topics
-  .filter((topic) => !selectedCollection.value || topic.collectionId === selectedCollection.value)
-  .map((topic) => topic.category))]
-  .sort((left, right) => left.localeCompare(right, 'zh-CN')))
+const categoryOptions = computed(() => [...new Set(collectionTopics.value.map((topic) => topic.category))]
+  .sort((left, right) => left.localeCompare(right, 'zh-CN'))
+  .map((category) => ({
+    value: category,
+    label: category,
+    count: collectionTopics.value.filter((topic) => topic.category === category).length,
+  })))
 
 const filteredTopics = computed(() => {
   const terms = normalize(query.value).split(/\s+/).filter(Boolean)
-  return topics.filter((topic) => {
+  return subjectTopics.value.filter((topic) => {
     if (selectedCollection.value && topic.collectionId !== selectedCollection.value) return false
     if (selectedCategory.value && topic.category !== selectedCategory.value) return false
     if (selectedTag.value && !topic.tags.some((tag) => normalize(tag) === normalize(selectedTag.value))) return false
     if (!terms.length) return true
-    const collection = collections.find((item) => item.id === topic.collectionId)
+    const collection = subjectCollections.value.find((item) => item.id === topic.collectionId)
     const text = normalize([
       topic.title,
       topic.summary,
@@ -159,14 +177,15 @@ const filterQuery = computed(() => {
   if (selectedTag.value) result.tag = selectedTag.value
   return result
 })
-const allResultsRoute = computed(() => ({ path: '/math', query: filterQuery.value }))
+const allResultsRoute = computed(() => ({ path: catalogPath.value, query: filterQuery.value }))
 
 function collectionCount(id: CollectionId): number {
-  return topics.filter((topic) => topic.collectionId === id).length
+  return subjectTopics.value.filter((topic) => topic.collectionId === id).length
 }
 
 function persistFilters() {
-  void router.replace({ path: route.path, query: filterQuery.value })
+  if (queryTimer) clearTimeout(queryTimer)
+  void router.replace({ path: filterPath.value, query: filterQuery.value })
 }
 
 function selectCollection(id: CollectionId | '') {
@@ -175,8 +194,8 @@ function selectCollection(id: CollectionId | '') {
   persistFilters()
 }
 
-function selectCategory(event: Event) {
-  selectedCategory.value = (event.target as HTMLSelectElement).value
+function selectCategory(value: string) {
+  selectedCategory.value = value
   persistFilters()
 }
 
@@ -192,6 +211,15 @@ function clearFilters() {
   selectedTag.value = ''
   persistFilters()
 }
+
+watch(query, () => {
+  if (queryTimer) clearTimeout(queryTimer)
+  queryTimer = setTimeout(persistFilters, 280)
+})
+
+onBeforeUnmount(() => {
+  if (queryTimer) clearTimeout(queryTimer)
+})
 </script>
 
 <style scoped>
@@ -329,17 +357,6 @@ function clearFilters() {
   font-size: 13px;
 }
 
-.learning-filters__secondary select {
-  min-height: 36px;
-  max-width: 100%;
-  padding: 5px 30px 5px 10px;
-  border: 1px solid var(--site-border);
-  border-radius: 5px;
-  color: var(--site-text);
-  background: var(--site-bg);
-  font: inherit;
-}
-
 .learning-filters__clear {
   padding: 5px 0;
   border: 0;
@@ -431,7 +448,6 @@ function clearFilters() {
 }
 
 .learning-catalog button:focus-visible,
-.learning-catalog select:focus-visible,
 .learning-catalog a:focus-visible {
   outline: 2px solid var(--site-accent);
   outline-offset: 3px;

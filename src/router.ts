@@ -8,6 +8,7 @@ const viewLoaders = {
   root: () => import('./views/MathHomeView.vue'),
   home: () => import('./views/MathHomeView.vue'),
   mathCatalog: () => import('./views/MathCatalogView.vue'),
+  englishCatalog: () => import('./views/EnglishCatalogView.vue'),
   mathTopic: () => import('./views/MathTopicView.vue'),
   archive: () => import('./views/ArchiveView.vue'),
   notes: () => import('./views/NotesView.vue'),
@@ -27,6 +28,7 @@ const primaryRoutePreloaders = new Map<string, () => Promise<unknown>>([
   ['/', viewLoaders.root],
   ['/home', viewLoaders.home],
   ['/math', viewLoaders.mathCatalog],
+  ['/english', viewLoaders.englishCatalog],
   ['/archive', viewLoaders.archive],
   ['/notes', viewLoaders.notes],
   ['/capture', viewLoaders.capture],
@@ -45,6 +47,7 @@ const detailRoutePreloaders = new Map<string, () => Promise<unknown>>([
   ['note', viewLoaders.noteDetail],
   ['tags', viewLoaders.tagDetail],
   ['math', viewLoaders.mathTopic],
+  ['english', viewLoaders.mathTopic],
 ])
 const preloadedRoutePaths = new Set<string>()
 
@@ -55,6 +58,8 @@ const routes = [
   { path: '/home', name: 'home', component: viewLoaders.home },
   { path: '/math', name: 'math-catalog', component: viewLoaders.mathCatalog },
   { path: '/math/:id', name: 'math-topic', component: viewLoaders.mathTopic },
+  { path: '/english', name: 'english-catalog', component: viewLoaders.englishCatalog },
+  { path: '/english/:id', name: 'english-topic', component: viewLoaders.mathTopic },
   { path: '/archive', name: 'archive', component: viewLoaders.archive },
   { path: '/notes', name: 'notes', component: viewLoaders.notes },
   { path: '/capture', name: 'capture', component: viewLoaders.capture },
