@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "repository": "dieWehmut/Vorlage",
+  "branch": "main",
+  "sourceCommit": "2ce9549bb02b122403fa867959f5bde77ee4569b",
+  "license": {
+    "spdx": "MIT",
+    "path": "LICENSE",
+    "sha256": "965ebe353c29b5a7812fe4034a27e6a557348130658ccfd3c5a680ead935a6cd"
+  },
+  "localExtensions": [
+    "src/styles/math-layout.scss"
+  ],
+  "files": {
+    "public/giscus-nexus-green-light.css": {
+      "sourceSha256": "aae78fdd4ec2aab902c13c37b1ab9923ca5f44c495c2195ae7c6f9d3320c8fbe",
+      "sha256": "aae78fdd4ec2aab902c13c37b1ab9923ca5f44c495c2195ae7c6f9d3320c8fbe"
+    },
+    "public/giscus-nexus-green.css": {
+      "sourceSha256": "c1fa85217c9ae8beffb823814777827f3ac6e257a4e6327ac714c6bfff254ae0",
+      "sha256": "c1fa85217c9ae8beffb823814777827f3ac6e257a4e6327ac714c6bfff254ae0"
+    },
+    "public/giscus-nexus-light.css": {
+      "sourceSha256": "d3a701ede64f1911f711525b83dac221d26d66f64c098b902e311859392a5b69",
+      "sha256": "d3a701ede64f1911f711525b83dac221d26d66f64c098b902e311859392a5b69"
+    },
+    "public/giscus-nexus.css": {
+      "sourceSha256": "f8000301dee2768d4c4fcf08a98e118d10e49902abd768d963db0567be2f3193",
+      "sha256": "f8000301dee2768d4c4fcf08a98e118d10e49902abd768d963db0567be2f3193"
+    },
+    "src/assets/fonts/LXGWWenKai-Regular.ttf": {
+      "sourceSha256": "151210456c0e832ea63f17b463b838b783da0d37678bd16b27836c9a9b05d0e3",
+      "sha256": "151210456c0e832ea63f17b463b838b783da0d37678bd16b27836c9a9b05d0e3"
+    },
+    "src/styles/animation/sakura/index.scss": {
+      "sourceSha256": "4675b7b71afe507e1963db427ac22c68036db772fdb82f3dce5485935c176c9b",
+      "sha256": "4675b7b71afe507e1963db427ac22c68036db772fdb82f3dce5485935c176c9b"
+    },
+    "src/styles/animation/snow/index.scss": {
+      "sourceSha256": "c68e48f549a3f471999889553f03e06221e7d415167c1fea32601458a8253272",
+      "sha256": "c68e48f549a3f471999889553f03e06221e7d415167c1fea32601458a8253272"
+    },
+    "src/styles/components/index.scss": {
+      "sourceSha256": "2b2aef6e2f9c14fc4d349c3b2700c37cc2f232a3dcd248d8dd83cf3b4e127cfe",
+      "sha256": "2b2aef6e2f9c14fc4d349c3b2700c37cc2f232a3dcd248d8dd83cf3b4e127cfe"
+    },
+    "src/styles/console.scss": {
+      "sourceSha256": "e23a6e04feaade9829cb8c0609d9860cf40681df71a5d2081acb4ea136846f28",
+      "sha256": "e23a6e04feaade9829cb8c0609d9860cf40681df71a5d2081acb4ea136846f28"
+    },
+    "src/styles/cursor/default/index.scss": {
+      "sourceSha256": "ccf6ec8cde1fdbc80e0b2cc3af7de2661fdc9dd3119184a9b458576988c27d0a",
+      "sha256": "ccf6ec8cde1fdbc80e0b2cc3af7de2661fdc9dd3119184a9b458576988c27d0a"
+    },
+    "src/styles/cursor/index.scss": {
+      "sourceSha256": "ad514571ca8b95cf67f086ebd7012427d99861f8cc0243407b83ab5602af0fe2",
+      "sha256": "ad514571ca8b95cf67f086ebd7012427d99861f8cc0243407b83ab5602af0fe2"
+    },
+    "src/styles/cursor/input/index.scss": {
+      "sourceSha256": "039afcd219c48886190dbc30bc65a98bb7a373b2e536f130155d097980e054fa",
+      "sha256": "039afcd219c48886190dbc30bc65a98bb7a373b2e536f130155d097980e054fa"
+    },
+    "src/styles/cursor/pointer/index.scss": {
+      "sourceSha256": "24cf1c2094fc9a9d78c507017e39a64dbd169cb5a625b06e4731a5c6882182b7",
+      "sha256": "24cf1c2094fc9a9d78c507017e39a64dbd169cb5a625b06e4731a5c6882182b7"
+    },
+    "src/styles/cursor/scrollbar/index.scss": {
+      "sourceSha256": "2c4ea4cc4b52db750dfc403997650b5a57fbb3401303c0846e39b00bab1e0902",
+      "sha256": "2c4ea4cc4b52db750dfc403997650b5a57fbb3401303c0846e39b00bab1e0902"
+    },
+    "src/styles/fonts/index.scss": {
+      "sourceSha256": "0409af47a51a7d4d96e867cc1e81cdae99a01464093dd7a96bab1a5dbb564f01",
+      "sha256": "0409af47a51a7d4d96e867cc1e81cdae99a01464093dd7a96bab1a5dbb564f01"
+    },
+    "src/styles/index.scss": {
+      "sourceSha256": "8b7084feac0233ecd7d33c0e3bba06241ac09cf24396c16bc71e91d101b6a8cc",
+      "sha256": "bc966f43998614c4f3a7cc1faf4ccc4cd534dea682300367225013c11ca28bf6"
+    },
+    "src/styles/layout/index.scss": {
+      "sourceSha256": "835d0f0486d320a2b76959b4e9b99cf76a60e694e93c05ae9a707c09a33ad090",
+      "sha256": "835d0f0486d320a2b76959b4e9b99cf76a60e694e93c05ae9a707c09a33ad090"
+    },
+    "src/styles/markdown/index.scss": {
+      "sourceSha256": "788f57e85e117ed33b397b6da53af78d91630a6aaf18c5e00b4b3895c96fc24d",
+      "sha256": "788f57e85e117ed33b397b6da53af78d91630a6aaf18c5e00b4b3895c96fc24d"
+    },
+    "src/styles/pages/index.scss": {
+      "sourceSha256": "c69f2c705713f7683fcbc3d8fe0b8c725dbe55e6effd503c72a4629700b1a7b4",
+      "sha256": "c69f2c705713f7683fcbc3d8fe0b8c725dbe55e6effd503c72a4629700b1a7b4"
+    },
+    "src/styles/scrollbars/index.scss": {
+      "sourceSha256": "24e3e2a58991c3be422177f025c3ca110545b11df9134a7d773b169d73872e95",
+      "sha256": "24e3e2a58991c3be422177f025c3ca110545b11df9134a7d773b169d73872e95"
+    },
+    "src/styles/tailwind/index.scss": {
+      "sourceSha256": "f4f4d07f5155f52ca50b4d89fd80c2ea4653361c31b6ccb75b5729ab0d50427e",
+      "sha256": "f4f4d07f5155f52ca50b4d89fd80c2ea4653361c31b6ccb75b5729ab0d50427e"
+    },
+    "src/styles/theme/dark/index.scss": {
+      "sourceSha256": "100f1548512b545b719292d069523a5e8c9d38ecb995fecfc2428c944eb9e1ea",
+      "sha256": "100f1548512b545b719292d069523a5e8c9d38ecb995fecfc2428c944eb9e1ea"
+    },
+    "src/styles/theme/light/index.scss": {
+      "sourceSha256": "8705a8b2655d1fa9a0e55706215da9f62286aeef20af622478934f5562953180",
+      "sha256": "8705a8b2655d1fa9a0e55706215da9f62286aeef20af622478934f5562953180"
+    },
+    "src/tailwind.css": {
+      "sourceSha256": "42070e0b45bb201b2b838a52aaaa6e965f964e0b542d97f1fe517fe59c4b75a8",
+      "sha256": "42070e0b45bb201b2b838a52aaaa6e965f964e0b542d97f1fe517fe59c4b75a8"
+    }
+  }
+}
