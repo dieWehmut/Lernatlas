@@ -24,7 +24,7 @@ const processEnv = typeof process === 'undefined' ? {} : process.env
 export const siteConfig: SiteConfig = {
   // --- Identity ---
   githubUser: 'dieWehmut',
-  githubRepo: 'tutor',
+  githubRepo: 'Lernatlas',
   // Where this code came from. Keep it as-is after forking: your own repository
   // is not the template you forked from.
   templateRepoUrl: templateIdentity.repositoryUrl,
@@ -36,7 +36,7 @@ export const siteConfig: SiteConfig = {
   title: '学科资料站',
   subtitle: '按专题整理，循方法学习',
   description: '按学科与专题整理学习资料，提供题目、解析的在线阅读与下载。目前收录初中数学、高中数学和数学竞赛资料。',
-  siteUrl: 'https://diewehmut.github.io/tutor/',
+  siteUrl: 'https://diewehmut.github.io/Lernatlas/',
   startedAt: '2026-11-20T00:00:00+08:00',
   colorScheme: 'purple',
 
@@ -59,8 +59,8 @@ export const siteConfig: SiteConfig = {
 
   // --- Social Links ---
   links: [
-    { label: 'GitHub', url: 'https://github.com/dieWehmut/tutor' },
-    { label: '资料目录', url: 'https://diewehmut.github.io/tutor/math' },
+    { label: 'GitHub', url: 'https://github.com/dieWehmut/Lernatlas' },
+    { label: '资料目录', url: 'https://diewehmut.github.io/Lernatlas/math' },
   ],
 }
 
