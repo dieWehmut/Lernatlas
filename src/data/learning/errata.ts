@@ -28,7 +28,7 @@ export const errata: SourceErratum[] = [
   {
     id: 'senior-strong-induction',
     title: '第二数学归纳法的归纳假设',
-    sources: [{ filename: '微点2 数学归纳法（1）.pdf', page: 1 }],
+    sources: [{ filename: '专题15数列不等式的证明微点2数学归纳法证明数列不等式.pdf', page: 1 }],
     correction: '强归纳法的归纳步骤可以假设起始指标至 k 的全部命题成立，再证明 k+1；只假设第 k 项是第一数学归纳法的写法。',
     evidence: '原页第二数学归纳法段落重复了第一归纳法的步骤；两种方法的归纳假设应区分。',
   },
