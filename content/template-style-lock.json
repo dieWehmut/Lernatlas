@@ -2,7 +2,7 @@
   "version": 1,
   "repository": "dieWehmut/Vorlage",
   "branch": "main",
-  "sourceCommit": "2ce9549bb02b122403fa867959f5bde77ee4569b",
+  "sourceCommit": "62622898faeb0cae6bb4f404cec0c5719ea3dc4a",
   "license": {
     "spdx": "MIT",
     "path": "LICENSE",
@@ -41,8 +41,8 @@
       "sha256": "c68e48f549a3f471999889553f03e06221e7d415167c1fea32601458a8253272"
     },
     "src/styles/components/index.scss": {
-      "sourceSha256": "2b2aef6e2f9c14fc4d349c3b2700c37cc2f232a3dcd248d8dd83cf3b4e127cfe",
-      "sha256": "2b2aef6e2f9c14fc4d349c3b2700c37cc2f232a3dcd248d8dd83cf3b4e127cfe"
+      "sourceSha256": "06f2c8f51367cbead452b499e411f1a0b5e2bd548b6028b2559463d6b8b12b1f",
+      "sha256": "06f2c8f51367cbead452b499e411f1a0b5e2bd548b6028b2559463d6b8b12b1f"
     },
     "src/styles/console.scss": {
       "sourceSha256": "e23a6e04feaade9829cb8c0609d9860cf40681df71a5d2081acb4ea136846f28",
