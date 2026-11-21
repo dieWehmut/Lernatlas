@@ -779,8 +779,7 @@ export default defineConfig({
           // chunks (better long-term caching). Everything else is left to
           // Vite's automatic per-route splitting so heavy libs (editor, math
           // rendering, etc.) stay lazy-loaded with the routes that use them.
-          if (id.includes('/@vue/') || id.includes('/vue/') || id.includes('vue-router')) return 'vendor-vue'
-          if (id.includes('@element-plus/icons-vue')) return 'vendor-icons'
+          if (id.includes('/@vue/') || id.includes('/vue/') || id.includes('vue-router') || id.includes('@element-plus/icons-vue')) return 'vendor-vue'
         },
       },
     },
