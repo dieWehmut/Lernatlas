@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+      url: ${{ steps.deploy.outputs.page_url || steps.deploy_retry.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -59,6 +59,32 @@ jobs:
         uses: actions/upload-pages-artifact@v5
         with:
           path: dist
+      - name: Wait for the pages artifact to register
+        shell: bash
+        run: |
+          # deploy-pages lists artifacts through the actions-results Twirp
+          # service, which can lag behind the finalized upload. Poll that same
+          # service (not the REST API, which is a different surface) before
+          # handing over to the deploy step.
+          sleep 10
+          origin=$(printf '%s' "${ACTIONS_RESULTS_URL}" | cut -d/ -f1-3)
+          url="${origin}/twirp/github.actions.results.api.v1.ArtifactService/ListArtifacts"
+          for attempt in $(seq 1 20); do
+            body=$(curl -sS -m 10 -X POST "$url" \
+              -H "Authorization: Bearer ${ACTIONS_RUNTIME_TOKEN}" \
+              -H "Content-Type: application/json" -d '{}' 2>/dev/null || true)
+            if printf '%s' "$body" | grep -q 'github-pages'; then
+              echo "pages artifact visible after ${attempt} attempt(s)"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "pages artifact still not visible; continuing so the deploy attempt can report it"
       - name: Deploy to GitHub Pages
         id: deploy
+        uses: actions/deploy-pages@v5
+        continue-on-error: true
+      - name: Deploy to GitHub Pages (retry)
+        id: deploy_retry
+        if: steps.deploy.outcome == 'failure'
         uses: actions/deploy-pages@v5
