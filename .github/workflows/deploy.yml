@@ -60,6 +60,25 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
+      - name: Wait for the pages artifact to register
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # deploy-pages reads the run's artifact list immediately after the
+          # upload step, and that list can lag behind the finalized zip. Poll
+          # until the artifact is visible so the deploy step has something to
+          # resolve.
+          for attempt in $(seq 1 24); do
+            count=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?name=github-pages" --jq '.total_count')
+            if [ "${count:-0}" -gt 0 ]; then
+              echo "pages artifact visible after ${attempt} attempt(s)"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "pages artifact never became visible" >&2
+          exit 1
       - name: Deploy to GitHub Pages
         id: deploy
         uses: actions/deploy-pages@v4
