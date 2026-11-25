@@ -29,7 +29,6 @@ import {
   User,
 } from '@element-plus/icons-vue'
 import { preloadPrimaryRoutes, preloadRouteByPath } from '../../router'
-import { getTopic } from '../../data/learning'
 
 const emit = defineEmits(['navigate'])
 
@@ -48,9 +47,9 @@ function isActive(item) {
   if (item.name === 'about') return route.path === '/about'
   if (item.name === 'notes') return route.path === '/notes' || route.path.startsWith('/note/')
   if (item.name === 'english') return route.path.startsWith('/english')
-  if (!route.path.startsWith('/math')) return false
-  const collection = String(route.query.collection || getTopic(String(route.params.id || ''))?.collectionId || '')
-  return item.collection ? item.collection === collection : !collection
+  // No collection entries remain in the sidebar, so the math entry covers the
+  // catalog and every topic page, including collection-filtered URLs.
+  return item.name === 'math' && route.path.startsWith('/math')
 }
 
 function preloadNavItem(to) {
