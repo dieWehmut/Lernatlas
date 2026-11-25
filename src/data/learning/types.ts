@@ -1,5 +1,5 @@
 /** Public learning catalog. All paths are relative to the deployed site. */
-export type CollectionId = 'junior' | 'senior' | 'competition' | 'grade10-volume1' | 'english-bridge'
+export type CollectionId = 'junior' | 'senior' | 'competition' | 'english-bridge'
 export type DocumentRole = 'questions' | 'solutions' | 'notes' | 'lesson'
 
 export interface SourceDownload {

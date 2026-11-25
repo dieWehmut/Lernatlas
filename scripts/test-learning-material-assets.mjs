@@ -24,9 +24,8 @@ export function verifyLearningMaterialAssets({ root = defaultRoot, materialRoot 
   const serialized = JSON.stringify(catalog)
 
   assert.equal(catalog.schemaVersion, 1)
-  assert.equal(catalog.topics.length, 85, 'new materials should have 85 indexed topics')
-  assert.equal(catalog.stats.topics, 85)
-  assert.equal(catalog.topics.filter((topic) => topic.collectionId === 'grade10-volume1').length, 71)
+  assert.equal(catalog.topics.length, 14, 'new materials should have 14 indexed topics')
+  assert.equal(catalog.stats.topics, 14)
   assert.equal(catalog.topics.filter((topic) => topic.collectionId === 'english-bridge').length, 14)
   assert.equal(new Set(catalog.topics.map((topic) => topic.id)).size, catalog.topics.length, 'topic ids must be unique')
   assert.equal(new Set([...original.topics, ...catalog.topics].map((topic) => topic.id)).size, original.topics.length + catalog.topics.length, 'new topic ids must not collide with the existing catalog')
@@ -58,13 +57,13 @@ export function verifyLearningMaterialAssets({ root = defaultRoot, materialRoot 
     }
   }
 
-  assert.equal(verifiedAssets.size, 170, 'each PDF and original DOCX should be represented exactly once')
-  assert.equal(catalog.stats.sourceFiles, 85)
-  assert.equal(catalog.stats.uniqueFiles, 85)
-  assert.equal(catalog.stats.pages, 1510)
-  assert.equal(catalog.stats.bytes, 21_510_146)
-  assert.equal(catalog.stats.sourceDownloads.files, 85)
-  assert.equal(catalog.stats.sourceDownloads.bytes, 12_708_420)
+  assert.equal(verifiedAssets.size, 28, 'each PDF and original DOCX should be represented exactly once')
+  assert.equal(catalog.stats.sourceFiles, 14)
+  assert.equal(catalog.stats.uniqueFiles, 14)
+  assert.equal(catalog.stats.pages, 294)
+  assert.equal(catalog.stats.bytes, 6_102_295)
+  assert.equal(catalog.stats.sourceDownloads.files, 14)
+  assert.equal(catalog.stats.sourceDownloads.bytes, 5_334_385)
 
   return { topics: catalog.topics.length, assets: verifiedAssets.size, pages: catalog.stats.pages }
 }

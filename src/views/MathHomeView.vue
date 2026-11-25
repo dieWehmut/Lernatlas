@@ -97,7 +97,6 @@ const collectionIcons: Record<string, typeof Notebook> = {
   junior: Notebook,
   senior: Reading,
   competition: Trophy,
-  'grade10-volume1': Reading,
   'english-bridge': ChatDotRound,
 }
 
