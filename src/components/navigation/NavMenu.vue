@@ -23,10 +23,8 @@ import { onMounted } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import {
   Collection,
-  FolderOpened,
   House,
   Notebook,
-  PriceTag,
   Reading,
   User,
 } from '@element-plus/icons-vue'
@@ -41,9 +39,6 @@ const navItems = [
   { name: 'home', label: '学科首页', to: '/home', icon: House },
   { name: 'math', label: '数学资料', to: '/math', icon: Collection },
   { name: 'english', label: '英语资料', to: '/english', icon: Reading },
-  { name: 'junior', label: '初中数学', to: '/math?collection=junior', icon: Notebook, collection: 'junior' },
-  { name: 'senior', label: '高中专题', to: '/math?collection=senior', icon: FolderOpened, collection: 'senior' },
-  { name: 'competition', label: '高中竞赛', to: '/math?collection=competition', icon: PriceTag, collection: 'competition' },
   { name: 'notes', label: '学习路线', to: '/notes', icon: Notebook },
   { name: 'about', label: '关于本站', to: '/about', icon: User },
 ]
