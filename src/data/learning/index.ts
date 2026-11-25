@@ -5,21 +5,48 @@ import type { Catalog, CollectionId, MaterialDocument, Topic } from './types'
 export type { Catalog, Collection, MaterialDocument, SourceDownload, Topic } from './types'
 
 /**
- * Topic categories that stay out of every browsing surface.
+ * Collections kept off the site, together with every topic inside them.
  *
- * The topics are kept in the catalog on purpose: their pages, PDF files and
- * direct links keep working, so hiding a category is a browsing decision and
- * never deletes published material. Only listings (catalog grids, category
- * filters, home counts, related topics) skip them.
+ * Nothing is deleted: the catalog JSON, the source PDFs and the Word originals
+ * stay in the repository, so listing a collection again means removing it from
+ * this list. Its topics stop resolving, so an old link reaches the topic
+ * missing state instead of a half-populated page.
  */
-const HIDDEN_TOPIC_CATEGORIES: Partial<Record<CollectionId, readonly string[]>> = {
-  'grade10-volume1': ['增分测评卷'],
+const HIDDEN_COLLECTIONS: readonly CollectionId[] = ['grade10-volume1']
+
+/** True when a topic may appear on the site. */
+export function isTopicListed(topic: Topic): boolean {
+  return !HIDDEN_COLLECTIONS.includes(topic.collectionId)
 }
 
-/** True when a topic may appear in a catalog listing. */
-export function isTopicListed(topic: Topic): boolean {
-  const hidden = HIDDEN_TOPIC_CATEGORIES[topic.collectionId]
-  return !hidden?.includes(topic.category)
+/**
+ * Recount the publishing statistics from the listed topics, so the headline
+ * numbers describe what the site actually offers rather than the raw archive.
+ * Pages and bytes are counted once per unique file, matching the importer.
+ */
+function summarize(topics: readonly Topic[]) {
+  const uniqueFiles = new Map<string, MaterialDocument>()
+  const sourceDownloads = new Map<string, number>()
+  let sourceFiles = 0
+  for (const topic of topics) {
+    for (const document of topic.documents) {
+      sourceFiles += 1
+      if (!uniqueFiles.has(document.sha256)) uniqueFiles.set(document.sha256, document)
+      const download = document.sourceDownload
+      if (download && !sourceDownloads.has(download.sha256)) sourceDownloads.set(download.sha256, download.bytes)
+    }
+  }
+  const files = [...uniqueFiles.values()]
+  return {
+    sourceFiles,
+    uniqueFiles: files.length,
+    pages: files.reduce((sum, file) => sum + file.pages, 0),
+    bytes: files.reduce((sum, file) => sum + file.bytes, 0),
+    sourceDownloads: {
+      files: sourceDownloads.size,
+      bytes: [...sourceDownloads.values()].reduce((sum, bytes) => sum + bytes, 0),
+    },
+  }
 }
 
 const originalCatalog = catalogData as Catalog
@@ -27,31 +54,26 @@ const courseCatalog = courseCatalogData as Catalog
 const mergedTopics = [...originalCatalog.topics, ...courseCatalog.topics]
 const listedTopics = mergedTopics.filter(isTopicListed)
 const mergedCollections = [...originalCatalog.collections, ...courseCatalog.collections]
+const listedCollections = mergedCollections.filter((collection) => !HIDDEN_COLLECTIONS.includes(collection.id))
 const mergedSubjects = [...new Map(
   [...originalCatalog.subjects, ...courseCatalog.subjects].map((subject) => [subject.id, subject]),
-).values()]
+).values()].filter((subject) => listedCollections.some((collection) => collection.subjectId === subject.id))
 
 export const catalog: Catalog = {
   ...originalCatalog,
   generatedAt: courseCatalog.generatedAt || originalCatalog.generatedAt,
   subjects: mergedSubjects,
-  collections: mergedCollections,
+  collections: listedCollections,
   topics: listedTopics,
   stats: {
-    sourceFiles: originalCatalog.stats.sourceFiles + courseCatalog.stats.sourceFiles,
-    uniqueFiles: originalCatalog.stats.uniqueFiles + courseCatalog.stats.uniqueFiles,
+    ...summarize(listedTopics),
     topics: listedTopics.length,
-    pages: originalCatalog.stats.pages + courseCatalog.stats.pages,
-    bytes: originalCatalog.stats.bytes + courseCatalog.stats.bytes,
-    sourceDownloads: courseCatalog.stats.sourceDownloads ?? { files: 0, bytes: 0 },
   },
 }
 export const topics = catalog.topics
 export const collections = catalog.collections
 
-// Resolve against every topic, including hidden categories, so a direct link to
-// a hidden topic still opens instead of falling through to the not-found page.
-const topicsById = new Map(mergedTopics.map((topic) => [topic.id, topic]))
+const topicsById = new Map(listedTopics.map((topic) => [topic.id, topic]))
 
 export function getTopic(id: string): Topic | undefined {
   return topicsById.get(id)
